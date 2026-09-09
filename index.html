@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Druif &amp; Draad — Franse wijnen, rechtstreeks geïmporteerd</title>
+  <meta name="description" content="Druif & Draad is een kleine, onafhankelijke wijnimporteur van Franse wijnen: Blanc, Rosé en Rouge, met zorg geselecteerd bij kleinschalige domeinen.">
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css?v=2">
+</head>
+<body>
+  <a class="skip-link" href="#main-content" data-i18n="skip">Ga naar hoofdinhoud</a>
+
+  <!-- ================= Age gate ================= -->
+  <div class="age-gate" id="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-gate-title">
+    <div class="age-gate__card" id="age-gate-card">
+      <img class="age-gate__logo" src="assets/img/logo.png" width="600" height="400" alt="Druif &amp; Draad Wijnimport">
+      <h2 id="age-gate-title" data-i18n="gate.title">Ben je 18 jaar of ouder?</h2>
+      <p data-i18n="gate.text">Deze website bevat informatie over alcoholhoudende dranken. Je moet 18 jaar of ouder zijn om verder te gaan.</p>
+      <div class="age-gate__actions">
+        <button type="button" class="btn btn-primary" id="age-yes" data-i18n="gate.yes">Ja, ik ben 18 jaar of ouder</button>
+        <button type="button" class="btn btn-ghost" id="age-no" data-i18n="gate.no">Nee</button>
+      </div>
+      <p class="age-gate__note" data-i18n="gate.note">Door verder te gaan bevestig je dat je de wettelijke leeftijd hebt om alcohol te kopen in jouw land.</p>
+    </div>
+  </div>
+
+  <!-- ================= Header ================= -->
+  <header class="site-header" id="site-header">
+    <div class="container site-header__bar">
+      <a class="brand" href="#top">
+        <img src="assets/img/logo.png" width="600" height="400" alt="Druif &amp; Draad Wijnimport">
+      </a>
+
+      <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav">
+        <span class="visually-hidden" data-i18n="nav.toggle">Menu</span>
+        <span></span>
+      </button>
+
+      <nav class="site-nav" id="site-nav">
+        <ul class="nav-links">
+          <li><a href="#verhaal" data-i18n="nav.story">Ons verhaal</a></li>
+          <li><a href="#wijnen" data-i18n="nav.wines">Wijnen</a></li>
+          <li><a href="#bestellen" data-i18n="nav.order">Bestellen</a></li>
+          <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
+        </ul>
+        <div class="lang-switch" role="group" aria-label="Taal / Language">
+          <button type="button" id="lang-nl" aria-pressed="true">NL</button>
+          <button type="button" id="lang-en" aria-pressed="false">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- ================= Hero ================= -->
+    <section class="hero" id="top">
+      <div class="container">
+        <div class="hero__copy reveal">
+          <span class="eyebrow" data-i18n="hero.eyebrow">Wijnimport uit Frankrijk</span>
+          <h1 class="hero__tagline" data-i18n="hero.tagline">Ontdek. Proef. <em>Deel.</em></h1>
+          <p class="hero__lede" data-i18n="hero.lede">Drie Franse wijnen, rechtstreeks geïmporteerd van kleinschalige domeinen — geselecteerd op karakter, niet op grootschaligheid.</p>
+          <div class="hero__actions">
+            <a class="btn btn-primary" href="#wijnen" data-i18n="hero.cta1">Bekijk de wijnen</a>
+            <a class="btn btn-ghost" href="#verhaal" data-i18n="hero.cta2">Ons verhaal</a>
+          </div>
+        </div>
+        <div class="hero__visual reveal">
+          <img src="assets/img/wines-group.jpg" width="1400" height="990" alt="De drie wijnen van Druif &amp; Draad: Blanc, Rosé en Rouge naast elkaar" loading="eager" decoding="async">
+          <span class="hero__badge" data-i18n="hero.badge">Blanc · Rosé · Rouge</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Story ================= -->
+    <section class="story" id="verhaal">
+      <div class="container">
+        <div class="reveal">
+          <span class="story__mark" aria-hidden="true">&amp;</span>
+          <span class="eyebrow" data-i18n="story.eyebrow">Ons verhaal</span>
+          <h2 data-i18n="story.heading">De draad tussen wijngaard en tafel</h2>
+        </div>
+        <div class="reveal">
+          <p class="story__text" data-i18n="story.text">Druif &amp; Draad is een kleine, onafhankelijke wijnimporteur die zich richt op wijnen uit Frankrijk. Het idee ontstond uit een liefde voor Franse wijngaarden en het verlangen om die kwaliteit rechtstreeks, zonder omwegen, naar Nederlandse tafels te brengen. Elke fles wordt met zorg geselecteerd bij kleinschalige domeinen, met aandacht voor karakter boven grootschaligheid. De naam verwijst naar de druif zelf en de draad die de wijngaard, de wijnmaker en de mensen die samen een glas delen met elkaar verbindt.</p>
+          <ul class="story__keywords">
+            <li data-i18n="story.kw1">Kleinschalig</li>
+            <li data-i18n="story.kw2">Rechtstreeks geïmporteerd</li>
+            <li data-i18n="story.kw3">Karakter boven grootschaligheid</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Wines ================= -->
+    <section class="wines" id="wijnen">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow" data-i18n="wines.eyebrow">De collectie</span>
+          <h2 data-i18n="wines.heading">Drie wijnen, één verhaal</h2>
+          <p data-i18n="wines.sub">Elk met een eigen karakter — allemaal met dezelfde zorgvuldige herkomst.</p>
+        </div>
+
+        <div class="wines-grid">
+          <!-- Blanc -->
+          <article class="wine-card reveal">
+            <div class="wine-card__figure">
+              <img src="assets/img/wine-blanc.jpg" width="1400" height="990" alt="Fles Druif &amp; Draad Blanc" loading="lazy" decoding="async">
+            </div>
+            <div class="wine-card__body">
+              <span class="wine-card__type" data-i18n="wine.blanc.type">Witte wijn</span>
+              <h3 class="wine-card__name">Druif &amp; Draad <em>Blanc</em></h3>
+              <p class="wine-card__grapes">Grenache Blanc · Roussanne · Viognier</p>
+              <ul class="wine-card__keywords">
+                <li data-i18n="wine.blanc.kw1">Fris</li>
+                <li data-i18n="wine.blanc.kw2">Elegant</li>
+                <li data-i18n="wine.blanc.kw3">Verfijnd</li>
+              </ul>
+              <p class="wine-card__desc" data-i18n="wine.blanc.desc">Een frisse, elegante witte wijn met een verfijnde uitstraling. Licht van karakter, met een stijl die past bij zowel een rustige avond als een feestelijk moment.</p>
+              <p class="wine-card__story" data-i18n="wine.blanc.story">Deze Blanc komt van een klein perceel op een zonovergoten helling in de Rhônevallei, waar de druiven langzaam rijpen dankzij de koele avondwind. De wijnmaker oogst er bewust vroeg in de ochtend om de frisheid in het glas te bewaren.</p>
+              <div class="wine-card__footer">
+                <div class="wine-card__price">&euro;9,55 <span data-i18n="wine.priceNote">incl. btw</span></div>
+                <button type="button" class="btn btn-ghost btn-order-wine" data-wine="blanc" data-i18n="wine.orderCta">Bestellen</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Rosé -->
+          <article class="wine-card reveal">
+            <div class="wine-card__figure">
+              <img src="assets/img/wine-rose.jpg" width="1400" height="990" alt="Fles Druif &amp; Draad Ros&eacute;" loading="lazy" decoding="async">
+            </div>
+            <div class="wine-card__body">
+              <span class="wine-card__type" data-i18n="wine.rose.type">Rosé</span>
+              <h3 class="wine-card__name">Druif &amp; Draad <em>Ros&eacute;</em></h3>
+              <p class="wine-card__grapes">Grenache · Mourv&egrave;dre</p>
+              <ul class="wine-card__keywords">
+                <li data-i18n="wine.rose.kw1">Licht</li>
+                <li data-i18n="wine.rose.kw2">Fruitig</li>
+                <li data-i18n="wine.rose.kw3">Levendig</li>
+              </ul>
+              <p class="wine-card__desc" data-i18n="wine.rose.desc">Een toegankelijke ros&eacute; met een zachte, fruitige stijl. Levendig in het glas en gemakkelijk te combineren met een zomerse maaltijd of een moment van ontspanning.</p>
+              <p class="wine-card__story" data-i18n="wine.rose.story">De druiven voor deze ros&eacute; worden met de hand geplukt op een familiedomein dat al drie generaties dezelfde wijngaard bewerkt. Kort huidcontact geeft de wijn zijn zachte kleur en levendige karakter.</p>
+              <div class="wine-card__footer">
+                <div class="wine-card__price">&euro;9,55 <span data-i18n="wine.priceNote">incl. btw</span></div>
+                <button type="button" class="btn btn-ghost btn-order-wine" data-wine="rose" data-i18n="wine.orderCta">Bestellen</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Rouge -->
+          <article class="wine-card reveal">
+            <div class="wine-card__figure">
+              <img src="assets/img/wine-rouge.jpg" width="1400" height="990" alt="Fles Druif &amp; Draad Rouge" loading="lazy" decoding="async">
+            </div>
+            <div class="wine-card__body">
+              <span class="wine-card__type" data-i18n="wine.rouge.type">Rode wijn</span>
+              <h3 class="wine-card__name">Druif &amp; Draad <em>Rouge</em></h3>
+              <p class="wine-card__grapes">Grenache · Syrah · Mourv&egrave;dre</p>
+              <ul class="wine-card__keywords">
+                <li data-i18n="wine.rouge.kw1">Rijk</li>
+                <li data-i18n="wine.rouge.kw2">Karaktervol</li>
+                <li data-i18n="wine.rouge.kw3">Rond</li>
+              </ul>
+              <p class="wine-card__desc" data-i18n="wine.rouge.desc">Een karaktervolle rode wijn met een rijke en ronde indruk. Vol van smaak, met de body en diepgang die je van een goede Franse rode wijn verwacht.</p>
+              <p class="wine-card__story" data-i18n="wine.rouge.story">Deze Rouge rijpt langzaam in oude eiken vaten, in een kelder die al meer dan honderd jaar dienstdoet als opslagplaats voor de beste vaten van het domein.</p>
+              <div class="wine-card__footer">
+                <div class="wine-card__price">&euro;9,55 <span data-i18n="wine.priceNote">incl. btw</span></div>
+                <button type="button" class="btn btn-ghost btn-order-wine" data-wine="rouge" data-i18n="wine.orderCta">Bestellen</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Order ================= -->
+    <section class="order" id="bestellen">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow" data-i18n="order.eyebrow">Bestellen</span>
+          <h2 data-i18n="order.heading">Vraag je flessen aan</h2>
+          <p data-i18n="order.sub">Vul het formulier in en we nemen persoonlijk contact met je op om je bestelling af te ronden.</p>
+        </div>
+
+        <div class="order-layout">
+          <div class="reveal">
+            <ul class="order-info__list">
+              <li>✉️ <a href="mailto:info@druifendraad.nl">info@druifendraad.nl</a></li>
+              <li>📞 <a href="tel:+31624607320">06 24 60 73 20</a></li>
+              <li><strong>&euro;9,55</strong> <span data-i18n="order.perBottle">per fles, incl. btw</span></li>
+            </ul>
+          </div>
+
+          <form class="order-form reveal" id="order-form" novalidate>
+            <!-- NOTE: replace with your own Formspree endpoint (or other form backend)
+                 before publishing — see https://formspree.io -->
+            <input type="hidden" name="_subject" value="Nieuwe bestelaanvraag — Druif &amp; Draad">
+
+            <div class="form-row two-col">
+              <div class="field">
+                <label for="f-name" class="field-required" data-i18n="order.name">Naam</label>
+                <input type="text" id="f-name" name="naam" autocomplete="name" required>
+              </div>
+              <div class="field">
+                <label for="f-email" class="field-required" data-i18n="order.email">E-mailadres</label>
+                <input type="email" id="f-email" name="email" autocomplete="email" required>
+              </div>
+            </div>
+
+            <div class="form-row two-col">
+              <div class="field">
+                <label for="f-phone" data-i18n="order.phone">Telefoonnummer <span class="hint" data-i18n="order.optional">(optioneel)</span></label>
+                <input type="tel" id="f-phone" name="telefoon" autocomplete="tel">
+              </div>
+              <div class="field">
+                <label for="f-wine" class="field-required" data-i18n="order.wine">Gewenste wijn</label>
+                <select id="f-wine" name="wijn" required>
+                  <option value="" data-i18n="order.wineChoose">Kies een wijn…</option>
+                  <option value="Blanc" data-i18n="order.wineBlanc">Blanc</option>
+                  <option value="Rosé" data-i18n="order.wineRose">Ros&eacute;</option>
+                  <option value="Rouge" data-i18n="order.wineRouge">Rouge</option>
+                  <option value="Proefpakket (alle drie)" data-i18n="order.wineAll">Proefpakket (alle drie)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row two-col">
+              <div class="field">
+                <label for="f-qty" class="field-required" data-i18n="order.qty">Aantal flessen</label>
+                <input type="number" id="f-qty" name="aantal" min="1" value="6" required>
+              </div>
+              <div class="field">
+                <label for="f-postcode" data-i18n="order.postcode">Postcode <span class="hint" data-i18n="order.optional">(optioneel)</span></label>
+                <input type="text" id="f-postcode" name="postcode" autocomplete="postal-code">
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="f-message" data-i18n="order.message">Bericht <span class="hint" data-i18n="order.optional">(optioneel)</span></label>
+              <textarea id="f-message" name="bericht" rows="3"></textarea>
+            </div>
+
+            <div class="order-form__footer">
+              <button type="submit" class="btn btn-primary" id="order-submit" data-loading="false">
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <span class="btn-label" data-i18n="order.submit">Verstuur bestelaanvraag</span>
+              </button>
+              <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= Footer ================= -->
+  <footer class="site-footer" id="contact">
+    <div class="container">
+      <div class="site-footer__brand">
+        <img src="assets/img/logo.png" width="600" height="400" alt="" aria-hidden="true">
+      </div>
+      <div class="site-footer__meta">
+        <p>info@druifendraad.nl · 06 24 60 73 20</p>
+        <p>&copy; <span id="year"></span> Druif &amp; Draad Wijnimport</p>
+      </div>
+      <p class="site-footer__legal-note" data-i18n="footer.legal">Door dit formulier te versturen ga je akkoord dat we je gegevens uitsluitend gebruiken om je bestelling te verwerken. Alcohol wordt alleen verkocht aan personen van 18 jaar en ouder.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
