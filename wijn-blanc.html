@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Druif &amp; Draad Blanc — Franse witte wijn</title>
+  <meta name="description" content="Druif & Draad Blanc: een frisse, elegante witte wijn van Vermentino, Roussanne, Clairette en Viognier, biologisch geteeld in het mediterrane zuiden van Frankrijk.">
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content" data-i18n="skip">Ga naar hoofdinhoud</a>
+
+  <!-- ================= Age gate ================= -->
+  <div class="age-gate" id="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-gate-title">
+    <div class="age-gate__card" id="age-gate-card">
+      <img class="age-gate__logo" src="assets/img/logo.png" width="600" height="400" alt="Druif &amp; Draad Wijnimport">
+      <h2 id="age-gate-title" data-i18n="gate.title">Ben je 18 jaar of ouder?</h2>
+      <p data-i18n="gate.text">Deze website bevat informatie over alcoholhoudende dranken. Je moet 18 jaar of ouder zijn om verder te gaan.</p>
+      <div class="age-gate__actions">
+        <button type="button" class="btn btn-primary" id="age-yes" data-i18n="gate.yes">Ja, ik ben 18 jaar of ouder</button>
+        <button type="button" class="btn btn-ghost" id="age-no" data-i18n="gate.no">Nee</button>
+      </div>
+      <p class="age-gate__note" data-i18n="gate.note">Door verder te gaan bevestig je dat je de wettelijke leeftijd hebt om alcohol te kopen in jouw land.</p>
+    </div>
+  </div>
+
+  <!-- ================= Header ================= -->
+  <header class="site-header" id="site-header">
+    <div class="container site-header__bar">
+      <a class="brand" href="index.html#top">
+        <img src="assets/img/logo.png" width="600" height="400" alt="Druif &amp; Draad Wijnimport">
+      </a>
+
+      <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav">
+        <span class="visually-hidden" data-i18n="nav.toggle">Menu</span>
+        <span></span>
+      </button>
+
+      <nav class="site-nav" id="site-nav">
+        <ul class="nav-links">
+          <li><a href="index.html#verhaal" data-i18n="nav.story">Ons verhaal</a></li>
+          <li><a href="index.html#wijnen" data-i18n="nav.wines">Wijnen</a></li>
+          <li><a href="index.html#bestellen" data-i18n="nav.order">Bestellen</a></li>
+          <li><a href="index.html#contact" data-i18n="nav.contact">Contact</a></li>
+        </ul>
+        <div class="lang-switch" role="group" aria-label="Taal / Language">
+          <button type="button" id="lang-nl" aria-pressed="true">NL</button>
+          <button type="button" id="lang-en" aria-pressed="false">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- ================= Wine detail ================= -->
+    <section class="wine-detail">
+      <div class="container">
+        <a class="wine-detail__back" href="index.html#wijnen" data-i18n="winepage.back">&larr; Alle wijnen</a>
+
+        <div class="wine-detail__layout">
+          <div class="wine-detail__visual reveal">
+            <img src="assets/img/wine-blanc.jpg" width="1400" height="990" alt="Fles Druif &amp; Draad Blanc" loading="eager" decoding="async">
+          </div>
+          <div class="wine-detail__copy reveal">
+            <span class="wine-card__type" data-i18n="wine.blanc.type">Witte wijn</span>
+            <h1 class="wine-detail__name">Druif &amp; Draad <em>Blanc</em></h1>
+            <p class="wine-card__grapes">Vermentino · Roussanne · Clairette · Viognier</p>
+            <div class="wine-detail__badges">
+              <span class="wine-detail__classification" data-i18n="wine.blanc.classification">Vin de Pays de M&eacute;diterran&eacute;e</span>
+              <span class="wine-detail__badge" data-i18n="wine.blanc.badge1">Biologisch</span>
+              <span class="wine-detail__badge" data-i18n="wine.blanc.badge2">Vegan</span>
+            </div>
+            <ul class="wine-card__keywords">
+              <li data-i18n="wine.blanc.kw1">Fris</li>
+              <li data-i18n="wine.blanc.kw2">Elegant</li>
+              <li data-i18n="wine.blanc.kw3">Verfijnd</li>
+            </ul>
+            <p class="wine-detail__desc" data-i18n="wine.blanc.desc">Een frisse, elegante witte wijn met een verfijnde uitstraling. Licht van karakter, met een stijl die past bij zowel een rustige avond als een feestelijk moment.</p>
+            <p class="wine-detail__story" data-i18n="wine.blanc.storyFull">Deze Blanc komt van een klein perceel op een zonovergoten helling in de Rhônevallei, waar de druiven langzaam rijpen dankzij de koele avondwind. De wijnmaker oogst er bewust vroeg in de ochtend om de frisheid in het glas te bewaren. Het resultaat is een wijn die de rust van die heuvel in elke slok meedraagt.</p>
+
+            <span class="wine-card__type" data-i18n="winepage.tastingLabel">Proeverij</span>
+            <p class="wine-detail__desc" data-i18n="wine.blanc.tasting">Een witte wijn vol fruit, met aroma&rsquo;s van abrikoos, perzik, ananas en een vleugje venkel. De smaak is vol, rond en aangenaam vet, met een lange, elegante afdronk.</p>
+
+            <div class="wine-detail__meta">
+              <span class="wine-detail__meta-label" data-i18n="winepage.serveLabel">Serveertip</span>
+              <p data-i18n="wine.blanc.pairing">Heerlijk als aperitief of bij de maaltijd &mdash; en verrassend lekker bij een kaasplateau.</p>
+            </div>
+
+            <div class="wine-detail__specs">
+              <h2 data-i18n="winepage.specsHeading">Wijnfiche</h2>
+              <dl>
+                <div><dt data-i18n="specs.soil">Grondsoort</dt><dd data-i18n="wine.blanc.spec.soil">Klei-zand en kalk-zand met veel stenen.</dd></div>
+                <div><dt data-i18n="specs.climate">Klimaat</dt><dd data-i18n="wine.blanc.spec.climate">Mediterraan.</dd></div>
+                <div><dt data-i18n="specs.vineyard">Wijngaard</dt><dd data-i18n="wine.blanc.spec.vineyard">Gemiddeld 20 jaar oud.</dd></div>
+                <div><dt data-i18n="specs.yield">Rendement</dt><dd data-i18n="wine.blanc.spec.yield">55 hl/ha.</dd></div>
+                <div><dt data-i18n="specs.harvest">Oogst</dt><dd data-i18n="wine.blanc.spec.harvest">Machinaal en handmatig.</dd></div>
+                <div><dt data-i18n="specs.abv">Alcoholpercentage</dt><dd data-i18n="wine.blanc.spec.abv">13,5% vol.</dd></div>
+                <div><dt data-i18n="specs.aging">Bewaarpotentieel</dt><dd data-i18n="wine.blanc.spec.aging">Minimaal 3 jaar.</dd></div>
+                <div class="wine-detail__specs-full"><dt data-i18n="specs.vinification">Vinificatie</dt><dd data-i18n="wine.blanc.spec.vinification">Pneumatisch geperst, 24 uur koud bezinken, temperatuurgestuurde fermentatie bij maximaal 16&deg;C in roestvrijstalen tanks gedurende ongeveer drie weken. Geklaard met bentoniet en zwaartekracht.</dd></div>
+              </dl>
+            </div>
+
+            <div class="wine-detail__actions">
+              <a class="btn btn-primary" href="index.html?wine=blanc#bestellen" data-i18n="winepage.orderCta">Bestel deze wijn</a>
+              <div class="wine-detail__price">&euro;9,55 <span data-i18n="wine.priceNote">incl. btw</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Other wines ================= -->
+    <section class="wine-detail__others">
+      <div class="container">
+        <h2 data-i18n="winepage.othersHeading">Ontdek ook</h2>
+        <div class="wine-detail__others-grid">
+          <a class="wine-detail__other-card" href="wijn-rouge.html">
+            <img src="assets/img/wine-rouge.jpg" width="1400" height="990" alt="" aria-hidden="true">
+            <span>Druif &amp; Draad Rouge</span>
+          </a>
+          <a class="wine-detail__other-card" href="wijn-rose.html">
+            <img src="assets/img/wine-rose.jpg" width="1400" height="990" alt="" aria-hidden="true">
+            <span>Druif &amp; Draad Ros&eacute;</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= Footer ================= -->
+  <footer class="site-footer" id="contact">
+    <div class="container">
+      <div class="site-footer__brand">
+        <img src="assets/img/logo.png" width="600" height="400" alt="" aria-hidden="true">
+      </div>
+      <div class="site-footer__meta">
+        <p>info@druifendraad.nl · 06 24 60 73 20</p>
+        <p>&copy; <span id="year"></span> Druif &amp; Draad Wijnimport</p>
+      </div>
+      <p class="site-footer__legal-note" data-i18n="footer.legal">Door dit formulier te versturen ga je akkoord dat we je gegevens uitsluitend gebruiken om je bestelling te verwerken. Alcohol wordt alleen verkocht aan personen van 18 jaar en ouder.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
