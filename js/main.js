@@ -39,16 +39,77 @@
       "wine.blanc.kw1": "Fris", "wine.blanc.kw2": "Elegant", "wine.blanc.kw3": "Verfijnd",
       "wine.blanc.desc": "Een frisse, elegante witte wijn met een verfijnde uitstraling. Licht van karakter, met een stijl die past bij zowel een rustige avond als een feestelijk moment.",
       "wine.blanc.story": "Deze Blanc komt van een klein perceel op een zonovergoten helling in de Rhônevallei, waar de druiven langzaam rijpen dankzij de koele avondwind. De wijnmaker oogst er bewust vroeg in de ochtend om de frisheid in het glas te bewaren.",
+      "wine.blanc.storyFull": "Deze Blanc komt van een klein perceel op een zonovergoten helling in de Rhônevallei, waar de druiven langzaam rijpen dankzij de koele avondwind. De wijnmaker oogst er bewust vroeg in de ochtend om de frisheid in het glas te bewaren. Het resultaat is een wijn die de rust van die heuvel in elke slok meedraagt.",
       "wine.rose.type": "Rosé",
       "wine.rose.kw1": "Licht", "wine.rose.kw2": "Fruitig", "wine.rose.kw3": "Levendig",
       "wine.rose.desc": "Een toegankelijke rosé met een zachte, fruitige stijl. Levendig in het glas en gemakkelijk te combineren met een zomerse maaltijd of een moment van ontspanning.",
       "wine.rose.story": "De druiven voor deze rosé worden met de hand geplukt op een familiedomein dat al drie generaties dezelfde wijngaard bewerkt. Kort huidcontact geeft de wijn zijn zachte kleur en levendige karakter.",
+      "wine.rose.storyFull": "De druiven voor deze rosé worden met de hand geplukt op een familiedomein dat al drie generaties dezelfde wijngaard bewerkt. Kort huidcontact geeft de wijn zijn zachte kleur en levendige karakter, precies zoals de familie het al decennia doet, op gevoel en ervaring in plaats van strak protocol.",
       "wine.rouge.type": "Rode wijn",
       "wine.rouge.kw1": "Rijk", "wine.rouge.kw2": "Karaktervol", "wine.rouge.kw3": "Rond",
       "wine.rouge.desc": "Een karaktervolle rode wijn met een rijke en ronde indruk. Vol van smaak, met de body en diepgang die je van een goede Franse rode wijn verwacht.",
       "wine.rouge.story": "Deze Rouge rijpt langzaam in oude eiken vaten, in een kelder die al meer dan honderd jaar dienstdoet als opslagplaats voor de beste vaten van het domein.",
+      "wine.rouge.storyFull": "Deze Rouge rijpt langzaam in oude eiken vaten, in een kelder die al meer dan honderd jaar dienstdoet als opslagplaats voor de beste vaten van het domein. De combinatie van oude wijnstokken en geduldige verfijning geeft de wijn zijn ronde, warme karakter.",
       "wine.priceNote": "incl. btw",
       "wine.orderCta": "Bestellen",
+      "wine.moreCta": "Meer over deze wijn <span aria-hidden=\"true\">&rarr;</span>",
+      "winepage.back": "&larr; Alle wijnen",
+      "winepage.orderCta": "Bestel deze wijn",
+      "winepage.serveLabel": "Serveertip",
+      "winepage.othersHeading": "Ontdek ook",
+      "winepage.tastingLabel": "Proeverij",
+      "winepage.specsHeading": "Wijnfiche",
+      "specs.classification": "Classificatie",
+      "specs.vintage": "Jaargang",
+      "specs.soil": "Grondsoort",
+      "specs.climate": "Klimaat",
+      "specs.vineyard": "Wijngaard",
+      "specs.yield": "Rendement",
+      "specs.harvest": "Oogst",
+      "specs.vinification": "Vinificatie",
+      "specs.abv": "Alcoholpercentage",
+      "specs.aging": "Bewaarpotentieel",
+
+      "wine.blanc.classification": "Vin de Pays de M&eacute;diterran&eacute;e",
+      "wine.blanc.badge1": "Biologisch",
+      "wine.blanc.badge2": "Vegan",
+      "wine.blanc.tasting": "Een witte wijn vol fruit, met aroma&rsquo;s van abrikoos, perzik, ananas en een vleugje venkel. De smaak is vol, rond en aangenaam vet, met een lange, elegante afdronk.",
+      "wine.blanc.pairing": "Heerlijk als aperitief of bij de maaltijd &mdash; en verrassend lekker bij een kaasplateau.",
+      "wine.blanc.spec.soil": "Klei-zand en kalk-zand met veel stenen.",
+      "wine.blanc.spec.climate": "Mediterraan.",
+      "wine.blanc.spec.vineyard": "Gemiddeld 20 jaar oud.",
+      "wine.blanc.spec.yield": "55 hl/ha.",
+      "wine.blanc.spec.harvest": "Machinaal en handmatig.",
+      "wine.blanc.spec.vinification": "Pneumatisch geperst, 24 uur koud bezinken, temperatuurgestuurde fermentatie bij maximaal 16&deg;C in roestvrijstalen tanks gedurende ongeveer drie weken. Geklaard met bentoniet en zwaartekracht.",
+      "wine.blanc.spec.abv": "13,5% vol.",
+      "wine.blanc.spec.aging": "Minimaal 3 jaar.",
+
+      "wine.rose.classification": "Vin de France",
+      "wine.rose.vintage": "2025",
+      "wine.rose.note": "Een geselecteerde wijn van een bevriende producent, waar we net zo trots op zijn als op onze eigen selectie.",
+      "wine.rose.tasting": "Opvallend fris en fruitig, met aroma&rsquo;s van perzik, abrikoos, guave, framboos, venkel, een vleugje limoen en een hint van witte bloesem. De smaak is fris en sappig, met een mooie balans tussen zuur en alcohol en een afdronk die zacht blijft hangen.",
+      "wine.rose.pairing": "Heerlijk als aperitief, en een uitstekende begeleider bij gegrilde gerechten of een avond tapas met vrienden.",
+      "wine.rose.spec.soil": "Klei-zand en kalk-zand met veel stenen.",
+      "wine.rose.spec.climate": "Mediterraan.",
+      "wine.rose.spec.vineyard": "25&ndash;30 jaar oud.",
+      "wine.rose.spec.yield": "60 hl/ha.",
+      "wine.rose.spec.harvest": "Machinaal.",
+      "wine.rose.spec.vinification": "Pneumatisch geperst, 24 uur koud bezinken, temperatuurgestuurde fermentatie bij maximaal 16&deg;C in roestvrijstalen tanks gedurende ongeveer drie weken. Geklaard met bentoniet en zwaartekracht.",
+      "wine.rose.spec.abv": "12% vol.",
+      "wine.rose.spec.aging": "Minimaal 2 jaar.",
+
+      "wine.rouge.classification": "Vin de France",
+      "wine.rouge.tasting": "Fris en kruidig, met veel aroma&rsquo;s van rijp donkerrood fruit zoals kersen en bramen, aangevuld met Provenc&ccedil;aalse kruiden en een vleugje vanille. De smaak is fris, met een mooie balans tussen zuur en alcohol en een afdronk die zacht blijft hangen.",
+      "wine.rouge.pairing": "Wij raden aan deze wijn licht gekoeld te serveren &mdash; een uitstekende keuze bij de barbecue of gegrilde gerechten, en bij zowel mediterrane als Hollandse gerechten.",
+      "wine.rouge.spec.soil": "Klei-zand en kalk-zand met veel stenen.",
+      "wine.rouge.spec.climate": "Mediterraan.",
+      "wine.rouge.spec.vineyard": "15&ndash;25 jaar oud.",
+      "wine.rouge.spec.yield": "50 hl/ha.",
+      "wine.rouge.spec.harvest": "Gedeeltelijk handmatig, gedeeltelijk machinaal.",
+      "wine.rouge.spec.vinification": "Gedeeltelijk koolzuurmaceratie, gedeeltelijk gekneusd, volledig ontsteeld. Vergisting bij maximaal 25&deg;C gedurende ongeveer drie weken; de wijn wordt zoveel mogelijk met behulp van zwaartekracht overgebracht.",
+      "wine.rouge.spec.abv": "14% vol.",
+      "wine.rouge.spec.aging": "Minimaal 3 jaar.",
+
       "order.eyebrow": "Bestellen",
       "order.heading": "Vraag je flessen aan",
       "order.sub": "Vul het formulier in en we nemen persoonlijk contact met je op om je bestelling af te ronden.",
@@ -106,16 +167,77 @@
       "wine.blanc.kw1": "Fresh", "wine.blanc.kw2": "Elegant", "wine.blanc.kw3": "Refined",
       "wine.blanc.desc": "A fresh, elegant white wine with a refined character. Light in style, suited to both a quiet evening and a festive occasion.",
       "wine.blanc.story": "This Blanc comes from a small plot on a sun-drenched slope in the Rhône Valley, where the grapes ripen slowly thanks to the cool evening breeze. The winemaker deliberately harvests early in the morning to preserve freshness in the glass.",
+      "wine.blanc.storyFull": "This Blanc comes from a small plot on a sun-drenched slope in the Rhône Valley, where the grapes ripen slowly thanks to the cool evening breeze. The winemaker deliberately harvests early in the morning to preserve freshness in the glass. The result is a wine that carries the calm of that hillside in every sip.",
       "wine.rose.type": "Rosé",
       "wine.rose.kw1": "Light", "wine.rose.kw2": "Fruity", "wine.rose.kw3": "Lively",
       "wine.rose.desc": "An approachable rosé with a soft, fruity style. Lively in the glass and easy to pair with a summer meal or a moment of relaxation.",
       "wine.rose.story": "The grapes for this rosé are hand-picked on a family estate that has worked the same vineyard for three generations. Brief skin contact gives the wine its soft colour and lively character.",
+      "wine.rose.storyFull": "The grapes for this rosé are hand-picked on a family estate that has worked the same vineyard for three generations. Brief skin contact gives the wine its soft colour and lively character — a technique the family has relied on for decades, guided by feel and experience rather than strict protocol.",
       "wine.rouge.type": "Red wine",
       "wine.rouge.kw1": "Rich", "wine.rouge.kw2": "Characterful", "wine.rouge.kw3": "Round",
       "wine.rouge.desc": "A characterful red wine with a rich and round impression. Full of flavour, with the body and depth you'd expect from a good French red.",
       "wine.rouge.story": "This Rouge ages slowly in old oak barrels, in a cellar that has served as storage for the estate's finest barrels for over a hundred years.",
+      "wine.rouge.storyFull": "This Rouge ages slowly in old oak barrels, in a cellar that has served as storage for the estate's finest barrels for over a hundred years. The combination of old vines and patient refinement gives the wine its round, warm character.",
       "wine.priceNote": "incl. VAT",
       "wine.orderCta": "Order",
+      "wine.moreCta": "More about this wine <span aria-hidden=\"true\">&rarr;</span>",
+      "winepage.back": "&larr; All wines",
+      "winepage.orderCta": "Order this wine",
+      "winepage.serveLabel": "Serving tip",
+      "winepage.othersHeading": "Discover more",
+      "winepage.tastingLabel": "Tasting notes",
+      "winepage.specsHeading": "Wine details",
+      "specs.classification": "Classification",
+      "specs.vintage": "Vintage",
+      "specs.soil": "Soil",
+      "specs.climate": "Climate",
+      "specs.vineyard": "Vineyard",
+      "specs.yield": "Yield",
+      "specs.harvest": "Harvest",
+      "specs.vinification": "Winemaking",
+      "specs.abv": "Alcohol",
+      "specs.aging": "Ageing potential",
+
+      "wine.blanc.classification": "Vin de Pays de M&eacute;diterran&eacute;e",
+      "wine.blanc.badge1": "Organic",
+      "wine.blanc.badge2": "Vegan",
+      "wine.blanc.tasting": "A fruit-forward white wine with aromas of apricot, peach, pineapple and a touch of fennel. The palate is full, round and pleasantly rich, with a long, elegant finish.",
+      "wine.blanc.pairing": "Lovely as an aperitif or with a meal &mdash; and surprisingly good with a cheese board.",
+      "wine.blanc.spec.soil": "Clay-sand and limestone-sand with many stones.",
+      "wine.blanc.spec.climate": "Mediterranean.",
+      "wine.blanc.spec.vineyard": "On average 20 years old.",
+      "wine.blanc.spec.yield": "55 hl/ha.",
+      "wine.blanc.spec.harvest": "Mechanical and hand-picked.",
+      "wine.blanc.spec.vinification": "Pneumatically pressed, 24-hour cold settling, temperature-controlled fermentation at a maximum of 16&deg;C in stainless steel tanks for about three weeks. Clarified with bentonite and gravity.",
+      "wine.blanc.spec.abv": "13.5% vol.",
+      "wine.blanc.spec.aging": "At least 3 years.",
+
+      "wine.rose.classification": "Vin de France",
+      "wine.rose.vintage": "2025",
+      "wine.rose.note": "A wine selected from a fellow producer we&rsquo;re just as proud of as our own selection.",
+      "wine.rose.tasting": "Strikingly fresh and fruity, with aromas of peach, apricot, guava, raspberry, fennel, a touch of lime and a hint of white blossom. The palate is fresh and juicy, with a lovely balance between acidity and alcohol and a soft, lingering finish.",
+      "wine.rose.pairing": "Delicious as an aperitif, and a great match for grilled dishes or a tapas evening with friends.",
+      "wine.rose.spec.soil": "Clay-sand and limestone-sand with many stones.",
+      "wine.rose.spec.climate": "Mediterranean.",
+      "wine.rose.spec.vineyard": "25&ndash;30 years old.",
+      "wine.rose.spec.yield": "60 hl/ha.",
+      "wine.rose.spec.harvest": "Mechanical.",
+      "wine.rose.spec.vinification": "Pneumatically pressed, 24-hour cold settling, temperature-controlled fermentation at a maximum of 16&deg;C in stainless steel tanks for about three weeks. Clarified with bentonite and gravity.",
+      "wine.rose.spec.abv": "12% vol.",
+      "wine.rose.spec.aging": "At least 2 years.",
+
+      "wine.rouge.classification": "Vin de France",
+      "wine.rouge.tasting": "Fresh and spicy, with plenty of aromas of ripe dark red fruit such as cherry and blackberry, complemented by Proven&ccedil;al herbs and a touch of vanilla. The palate is fresh, with a lovely balance between acidity and alcohol and a soft, lingering finish.",
+      "wine.rouge.pairing": "We recommend serving this wine lightly chilled &mdash; an excellent choice for the barbecue or grilled dishes, and equally at home with Mediterranean and Dutch cuisine.",
+      "wine.rouge.spec.soil": "Clay-sand and limestone-sand with many stones.",
+      "wine.rouge.spec.climate": "Mediterranean.",
+      "wine.rouge.spec.vineyard": "15&ndash;25 years old.",
+      "wine.rouge.spec.yield": "50 hl/ha.",
+      "wine.rouge.spec.harvest": "Partly hand-picked, partly mechanical.",
+      "wine.rouge.spec.vinification": "Partly carbonic maceration, partly crushed, fully destemmed. Fermented at a maximum of 25&deg;C for about three weeks; the wine is transferred using gravity wherever possible.",
+      "wine.rouge.spec.abv": "14% vol.",
+      "wine.rouge.spec.aging": "At least 3 years.",
+
       "order.eyebrow": "Order",
       "order.heading": "Request your bottles",
       "order.sub": "Fill in the form and we'll get in touch personally to finalise your order.",
@@ -310,18 +432,34 @@
     if (!form) return;
 
     var wineSelect = document.getElementById("f-wine");
-    document.querySelectorAll(".btn-order-wine").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var wine = btn.getAttribute("data-wine");
-        var map = { blanc: "Blanc", rose: "Rosé", rouge: "Rouge" };
-        if (wineSelect && map[wine]) {
-          wineSelect.value = map[wine];
-        }
-        document.getElementById("bestellen").scrollIntoView({ behavior: "smooth", block: "start" });
+    var wineMap = { blanc: "Blanc", rose: "Rosé", rouge: "Rouge" };
+
+    function selectWine(wine, opts) {
+      opts = opts || {};
+      if (wineSelect && wineMap[wine]) {
+        wineSelect.value = wineMap[wine];
+      }
+      if (opts.scroll !== false) {
+        var target = document.getElementById("bestellen");
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      if (opts.focus) {
         var nameField = document.getElementById("f-name");
         window.setTimeout(function () { if (nameField) nameField.focus(); }, 450);
+      }
+    }
+
+    document.querySelectorAll(".btn-order-wine").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        selectWine(btn.getAttribute("data-wine"), { focus: true });
       });
     });
+
+    // Preselect a wine when arriving from a wine detail page, e.g. index.html?wine=rouge#bestellen
+    var queryWine = new URLSearchParams(window.location.search).get("wine");
+    if (queryWine && wineMap[queryWine]) {
+      selectWine(queryWine, { scroll: false });
+    }
 
     var submitBtn = document.getElementById("order-submit");
     var status = document.getElementById("form-status");
