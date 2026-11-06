@@ -22,10 +22,10 @@
       "nav.contact": "Contact",
       "hero.eyebrow": "Wijnimport uit Frankrijk",
       "hero.tagline": "Ontdek. Proef. <em>Deel.</em>",
-      "hero.lede": "Drie Franse wijnen, rechtstreeks geïmporteerd van kleinschalige domeinen — geselecteerd op karakter, niet op grootschaligheid.",
+      "hero.lede": "Vier Franse wijnen, rechtstreeks geïmporteerd van kleinschalige domeinen — geselecteerd op karakter, niet op grootschaligheid.",
       "hero.cta1": "Bekijk de wijnen",
       "hero.cta2": "Ons verhaal",
-      "hero.badge": "Blanc · Rosé · Rouge",
+      "hero.badge": "Blanc · Rouge · Rosé · Mousseux",
       "story.eyebrow": "Ons verhaal",
       "story.heading": "De draad tussen wijngaard en tafel",
       "story.text": "Druif &amp; Draad is een kleine, onafhankelijke wijnimporteur die zich richt op wijnen uit Frankrijk. Het idee ontstond uit een liefde voor Franse wijngaarden en het verlangen om die kwaliteit rechtstreeks, zonder omwegen, naar Nederlandse tafels te brengen. Elke fles wordt met zorg geselecteerd bij kleinschalige domeinen, met aandacht voor karakter boven grootschaligheid. De naam verwijst naar de druif zelf en de draad die de wijngaard, de wijnmaker en de mensen die samen een glas delen met elkaar verbindt.",
@@ -33,7 +33,7 @@
       "story.kw2": "Rechtstreeks geïmporteerd",
       "story.kw3": "Karakter boven grootschaligheid",
       "wines.eyebrow": "De collectie",
-      "wines.heading": "Drie wijnen, één verhaal",
+      "wines.heading": "Vier wijnen, één verhaal",
       "wines.sub": "Elk met een eigen karakter — allemaal met dezelfde zorgvuldige herkomst.",
       "wine.blanc.type": "Witte wijn",
       "wine.blanc.kw1": "Fris", "wine.blanc.kw2": "Elegant", "wine.blanc.kw3": "Verfijnd",
@@ -50,6 +50,20 @@
       "wine.rouge.desc": "Een karaktervolle rode wijn met een rijke en ronde indruk. Vol van smaak, met de body en diepgang die je van een goede Franse rode wijn verwacht.",
       "wine.rouge.story": "Deze Rouge rijpt langzaam in oude eiken vaten, in een kelder die al meer dan honderd jaar dienstdoet als opslagplaats voor de beste vaten van het domein.",
       "wine.rouge.storyFull": "Deze Rouge rijpt langzaam in oude eiken vaten, in een kelder die al meer dan honderd jaar dienstdoet als opslagplaats voor de beste vaten van het domein. De combinatie van oude wijnstokken en geduldige verfijning geeft de wijn zijn ronde, warme karakter.",
+      "wine.mousseux.type": "Mousserende wijn",
+      "wine.mousseux.kw1": "Fris", "wine.mousseux.kw2": "Fruitig", "wine.mousseux.kw3": "Feestelijk",
+      "wine.mousseux.desc": "Een frisse, fruitige mousseux zonder restsuiker, een zogeheten Brut de Brut. Een feestelijke wijn om samen te delen.",
+      "wine.mousseux.classification": "Vin de France",
+      "wine.mousseux.badge1": "Vegan",
+      "wine.mousseux.tasting": "Deze witte wijn is op tank doorgegist en heeft nagenoeg geen restsuiker, een zogeheten Brut de Brut. De aroma&rsquo;s zijn zeer fris, met jong vers fruit zoals appel, abrikoos, perzik en witte aalbes, en een vleugje brioche. De smaak is heerlijk fris en fruitig, met een zeer aangename, frisse afdronk. Kortom: een feestelijke wijn om samen te delen. Sant&eacute;!",
+      "wine.mousseux.spec.soil": "Klei-zand en kalk-zand met veel stenen.",
+      "wine.mousseux.spec.climate": "Mediterraan.",
+      "wine.mousseux.spec.vineyard": "15&ndash;30 jaar oud, op draad, 1,60 meter hoog.",
+      "wine.mousseux.spec.yield": "55 hl/ha.",
+      "wine.mousseux.spec.harvest": "Volledig handmatig.",
+      "wine.mousseux.spec.vinification": "Direct geperst. Vergisting bij maximaal 16&deg;C gedurende ongeveer drie weken, gevolgd door hervergisting op drukvat gedurende minimaal een maand. Alleen klaring met bentoniet. De wijn wordt zoveel mogelijk met behulp van zwaartekracht overgebracht.",
+      "wine.mousseux.spec.abv": "13% vol.",
+      "wine.mousseux.spec.aging": "Minimaal 3 jaar.",
       "wine.priceNote": "incl. btw",
       "wine.orderCta": "Bestellen",
       "wine.moreCta": "Meer over deze wijn <span aria-hidden=\"true\">&rarr;</span>",
@@ -112,21 +126,32 @@
 
       "order.eyebrow": "Bestellen",
       "order.heading": "Vraag je flessen aan",
-      "order.sub": "Vul het formulier in en we nemen persoonlijk contact met je op om je bestelling af te ronden.",
-      "order.perBottle": "per fles, incl. btw",
+      "order.sub": "Kies je flessen, vul je gegevens in en we nemen persoonlijk contact met je op om je bestelling af te ronden.",
+      "order.yourOrder": "Jouw bestelling",
+      "order.contact": "Jouw gegevens",
       "order.name": "Naam",
       "order.email": "E-mailadres",
       "order.phone": "Telefoonnummer",
       "order.optional": "(optioneel)",
-      "order.wine": "Gewenste wijn",
-      "order.wineChoose": "Kies een wijn…",
-      "order.wineBlanc": "Blanc",
-      "order.wineRose": "Rosé",
-      "order.wineRouge": "Rouge",
-      "order.wineAll": "Proefpakket (alle drie)",
-      "order.qty": "Aantal flessen",
+      "order.address": "Bezorgadres",
+      "order.street": "Straat",
+      "order.houseNumber": "Huisnummer",
+      "order.addition": "Toevoeging",
       "order.postcode": "Postcode",
+      "order.city": "Plaats",
       "order.message": "Bericht",
+      "order.total": "Totaal",
+      "order.bottle": "fles",
+      "order.bottles": "flessen",
+      "order.less": "Minder",
+      "order.more": "Meer",
+      "order.qtyBlanc": "Aantal flessen Blanc",
+      "order.qtyRouge": "Aantal flessen Rouge",
+      "order.qtyRose": "Aantal flessen Rosé",
+      "order.qtyMousseux": "Aantal flessen Mousseux",
+      "order.errNoBottles": "Kies minstens één fles om te bestellen.",
+      "order.errPostcode": "Vul een geldige postcode in, bijvoorbeeld 1234 AB.",
+      "order.mailto": "Je e-mailprogramma wordt geopend met je bestelling. Verstuur de e-mail om je aanvraag af te ronden.",
       "order.submit": "Verstuur bestelaanvraag",
       "order.sending": "Versturen…",
       "order.success": "Bedankt! Je aanvraag is verstuurd — we nemen zo snel mogelijk contact met je op.",
@@ -150,10 +175,10 @@
       "nav.contact": "Contact",
       "hero.eyebrow": "Wine import from France",
       "hero.tagline": "Discover. Taste. <em>Share.</em>",
-      "hero.lede": "Three French wines, imported directly from small-scale estates — selected for character, not for scale.",
+      "hero.lede": "Four French wines, imported directly from small-scale estates — selected for character, not for scale.",
       "hero.cta1": "View the wines",
       "hero.cta2": "Our story",
-      "hero.badge": "Blanc · Rosé · Rouge",
+      "hero.badge": "Blanc · Rouge · Rosé · Mousseux",
       "story.eyebrow": "Our story",
       "story.heading": "The thread between vineyard and table",
       "story.text": "Druif &amp; Draad is a small, independent wine importer focused on wines from France. The idea was born from a love for French vineyards and the desire to bring that quality straight to Dutch tables, without detours. Every bottle is carefully selected from small-scale estates, with attention to character rather than scale. The name refers to the grape itself and the thread that connects the vineyard, the winemaker, and the people who share a glass together.",
@@ -161,7 +186,7 @@
       "story.kw2": "Imported directly",
       "story.kw3": "Character over scale",
       "wines.eyebrow": "The collection",
-      "wines.heading": "Three wines, one story",
+      "wines.heading": "Four wines, one story",
       "wines.sub": "Each with its own character — all with the same careful provenance.",
       "wine.blanc.type": "White wine",
       "wine.blanc.kw1": "Fresh", "wine.blanc.kw2": "Elegant", "wine.blanc.kw3": "Refined",
@@ -178,6 +203,20 @@
       "wine.rouge.desc": "A characterful red wine with a rich and round impression. Full of flavour, with the body and depth you'd expect from a good French red.",
       "wine.rouge.story": "This Rouge ages slowly in old oak barrels, in a cellar that has served as storage for the estate's finest barrels for over a hundred years.",
       "wine.rouge.storyFull": "This Rouge ages slowly in old oak barrels, in a cellar that has served as storage for the estate's finest barrels for over a hundred years. The combination of old vines and patient refinement gives the wine its round, warm character.",
+      "wine.mousseux.type": "Sparkling wine",
+      "wine.mousseux.kw1": "Fresh", "wine.mousseux.kw2": "Fruity", "wine.mousseux.kw3": "Festive",
+      "wine.mousseux.desc": "A fresh, fruity sparkling wine with no residual sugar, a so-called Brut de Brut. A festive wine to share.",
+      "wine.mousseux.classification": "Vin de France",
+      "wine.mousseux.badge1": "Vegan",
+      "wine.mousseux.tasting": "This white wine is fermented to dryness in tank and has virtually no residual sugar, a so-called Brut de Brut. The aromas are very fresh, with young fresh fruit such as apple, apricot, peach and white currant, and a hint of brioche. The palate is delightfully fresh and fruity, with a very pleasant, fresh finish. In short: a festive wine to share. Sant&eacute;!",
+      "wine.mousseux.spec.soil": "Clay-sand and limestone-sand with many stones.",
+      "wine.mousseux.spec.climate": "Mediterranean.",
+      "wine.mousseux.spec.vineyard": "15&ndash;30 years old, trained on wire, 1.60 metres high.",
+      "wine.mousseux.spec.yield": "55 hl/ha.",
+      "wine.mousseux.spec.harvest": "Entirely hand-picked.",
+      "wine.mousseux.spec.vinification": "Direct pressing. Fermentation at a maximum of 16&deg;C for about three weeks, followed by secondary fermentation in a pressure tank for at least one month. Clarified with bentonite only. The wine is transferred using gravity wherever possible.",
+      "wine.mousseux.spec.abv": "13% vol.",
+      "wine.mousseux.spec.aging": "At least 3 years.",
       "wine.priceNote": "incl. VAT",
       "wine.orderCta": "Order",
       "wine.moreCta": "More about this wine <span aria-hidden=\"true\">&rarr;</span>",
@@ -240,21 +279,32 @@
 
       "order.eyebrow": "Order",
       "order.heading": "Request your bottles",
-      "order.sub": "Fill in the form and we'll get in touch personally to finalise your order.",
-      "order.perBottle": "per bottle, incl. VAT",
+      "order.sub": "Choose your bottles, fill in your details and we'll get in touch personally to finalise your order.",
+      "order.yourOrder": "Your order",
+      "order.contact": "Your details",
       "order.name": "Name",
       "order.email": "Email address",
       "order.phone": "Phone number",
       "order.optional": "(optional)",
-      "order.wine": "Preferred wine",
-      "order.wineChoose": "Choose a wine…",
-      "order.wineBlanc": "Blanc",
-      "order.wineRose": "Rosé",
-      "order.wineRouge": "Rouge",
-      "order.wineAll": "Tasting set (all three)",
-      "order.qty": "Number of bottles",
+      "order.address": "Delivery address",
+      "order.street": "Street",
+      "order.houseNumber": "House number",
+      "order.addition": "Addition",
       "order.postcode": "Postal code",
+      "order.city": "City",
       "order.message": "Message",
+      "order.total": "Total",
+      "order.bottle": "bottle",
+      "order.bottles": "bottles",
+      "order.less": "Fewer",
+      "order.more": "More",
+      "order.qtyBlanc": "Number of bottles Blanc",
+      "order.qtyRouge": "Number of bottles Rouge",
+      "order.qtyRose": "Number of bottles Rosé",
+      "order.qtyMousseux": "Number of bottles Mousseux",
+      "order.errNoBottles": "Please choose at least one bottle to order.",
+      "order.errPostcode": "Please enter a valid postal code, for example 1234 AB.",
+      "order.mailto": "Your email app will open with your order. Send the email to complete your request.",
       "order.submit": "Send order request",
       "order.sending": "Sending…",
       "order.success": "Thank you! Your request has been sent — we'll be in touch as soon as possible.",
@@ -281,6 +331,12 @@
       if (value !== undefined) el.innerHTML = value;
     });
 
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n-aria");
+      var value = dict[key] !== undefined ? dict[key] : fallback[key];
+      if (value !== undefined) el.setAttribute("aria-label", value);
+    });
+
     var btnNl = document.getElementById("lang-nl");
     var btnEn = document.getElementById("lang-en");
     if (btnNl && btnEn) {
@@ -292,6 +348,7 @@
   function setLang(lang) {
     try { localStorage.setItem(STORAGE_LANG, lang); } catch (e) { /* storage unavailable */ }
     applyTranslations(lang);
+    document.dispatchEvent(new CustomEvent("dd:lang"));
   }
 
   /* ============================================================
@@ -427,61 +484,192 @@
   /* ============================================================
      Order form
      ============================================================ */
+  function formatEuro(n) {
+    return "€" + n.toFixed(2).replace(".", ",");
+  }
+
   function initOrderForm() {
     var form = document.getElementById("order-form");
     if (!form) return;
 
-    var wineSelect = document.getElementById("f-wine");
-    var wineMap = { blanc: "Blanc", rose: "Rosé", rouge: "Rouge" };
+    // Zet hier het formulier-adres van Formspree (https://formspree.io), bijvoorbeeld
+    // "https://formspree.io/f/abcdwxyz". Zolang dit nog "YOUR_FORM_ID" bevat, opent het
+    // formulier in plaats daarvan het e-mailprogramma van de klant met de bestelling.
+    var FORM_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+    var ORDER_EMAIL = "info@druifendraad.nl";
 
-    function selectWine(wine, opts) {
+    var lines = Array.prototype.slice.call(form.querySelectorAll(".order-line"));
+    var totalCount = document.getElementById("order-total-count");
+    var totalAmount = document.getElementById("order-total-amount");
+    var linesError = document.getElementById("order-lines-error");
+    var submitBtn = document.getElementById("order-submit");
+    var status = document.getElementById("form-status");
+
+    function dictNow() { return translations[getLang()] || translations.nl; }
+
+    function qtyOf(line) {
+      var v = parseInt(line.querySelector(".order-qty").value, 10);
+      if (isNaN(v) || v < 0) return 0;
+      return Math.min(v, 99);
+    }
+
+    function setQty(line, value) {
+      var v = Math.max(0, Math.min(99, value));
+      line.querySelector(".order-qty").value = v;
+      updateTotals();
+    }
+
+    function updateTotals() {
+      var bottles = 0;
+      var amount = 0;
+      lines.forEach(function (line) {
+        var q = qtyOf(line);
+        var price = parseFloat(line.getAttribute("data-price"));
+        bottles += q;
+        amount += q * price;
+        line.querySelector(".order-line__sub").textContent = q ? formatEuro(q * price) : "–";
+        line.classList.toggle("has-qty", q > 0);
+        line.querySelector('[data-step="-1"]').disabled = q === 0;
+        line.querySelector('[data-step="1"]').disabled = q >= 99;
+      });
+      var d = dictNow();
+      totalCount.textContent = bottles + " " + (bottles === 1 ? d["order.bottle"] : d["order.bottles"]);
+      totalAmount.textContent = formatEuro(amount);
+      if (bottles > 0) linesError.hidden = true;
+      return { bottles: bottles, amount: amount };
+    }
+
+    lines.forEach(function (line) {
+      line.querySelectorAll(".stepper__btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          setQty(line, qtyOf(line) + parseInt(btn.getAttribute("data-step"), 10));
+        });
+      });
+      line.querySelector(".order-qty").addEventListener("input", updateTotals);
+      line.querySelector(".order-qty").addEventListener("change", function () { setQty(line, qtyOf(line)); });
+    });
+
+    document.addEventListener("dd:lang", updateTotals);
+
+    function lineFor(wine) {
+      return form.querySelector('.order-line[data-wine="' + wine + '"]');
+    }
+
+    // Een wijn toevoegen vanaf een wijnkaart: staat hij op 0, dan wordt het 1 fles.
+    function addWine(wine, opts) {
       opts = opts || {};
-      if (wineSelect && wineMap[wine]) {
-        wineSelect.value = wineMap[wine];
-      }
+      var line = lineFor(wine);
+      if (!line) return;
+      if (qtyOf(line) === 0) setQty(line, 1);
       if (opts.scroll !== false) {
         var target = document.getElementById("bestellen");
         if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
       }
       if (opts.focus) {
-        var nameField = document.getElementById("f-name");
-        window.setTimeout(function () { if (nameField) nameField.focus(); }, 450);
+        window.setTimeout(function () { line.querySelector(".order-qty").focus(); }, 450);
       }
     }
 
     document.querySelectorAll(".btn-order-wine").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        selectWine(btn.getAttribute("data-wine"), { focus: true });
+        addWine(btn.getAttribute("data-wine"), { focus: true });
       });
     });
 
-    // Preselect a wine when arriving from a wine detail page, e.g. index.html?wine=rouge#bestellen
+    // Vanaf een wijnpagina, bijvoorbeeld index.html?wine=rouge#bestellen
     var queryWine = new URLSearchParams(window.location.search).get("wine");
-    if (queryWine && wineMap[queryWine]) {
-      selectWine(queryWine, { scroll: false });
+    if (queryWine) addWine(queryWine, { scroll: false });
+
+    updateTotals();
+
+    function buildOrder() {
+      var rows = [];
+      var bottles = 0;
+      var amount = 0;
+      lines.forEach(function (line) {
+        var q = qtyOf(line);
+        if (!q) return;
+        var price = parseFloat(line.getAttribute("data-price"));
+        bottles += q;
+        amount += q * price;
+        rows.push(q + " × " + line.getAttribute("data-name") + " (" + formatEuro(price) + ") = " + formatEuro(q * price));
+      });
+      return { rows: rows, bottles: bottles, amount: amount };
     }
 
-    var submitBtn = document.getElementById("order-submit");
-    var status = document.getElementById("form-status");
+    function value(name) {
+      var el = form.elements[name];
+      return el ? el.value.trim() : "";
+    }
 
-    // Replace this with your own Formspree endpoint (https://formspree.io) before publishing.
-    var FORM_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+    function addressText() {
+      var number = value("huisnummer") + (value("toevoeging") ? " " + value("toevoeging") : "");
+      return value("straat") + " " + number + ", " + value("postcode").toUpperCase() + " " + value("plaats");
+    }
+
+    function sendMailto(order) {
+      var body = [
+        "Nieuwe bestelaanvraag via druifendraad.nl",
+        "",
+        "Bestelling:",
+        order.rows.join("\n"),
+        "Totaal: " + order.bottles + " fles(sen), " + formatEuro(order.amount) + " incl. btw",
+        "",
+        "Naam: " + value("naam"),
+        "E-mail: " + value("email"),
+        "Telefoon: " + (value("telefoon") || "-"),
+        "Bezorgadres: " + addressText(),
+        "",
+        "Bericht: " + (value("bericht") || "-")
+      ].join("\n");
+      window.location.href = "mailto:" + ORDER_EMAIL +
+        "?subject=" + encodeURIComponent("Nieuwe bestelling — " + order.bottles + " fles(sen)") +
+        "&body=" + encodeURIComponent(body);
+    }
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      var dict = dictNow();
+      status.classList.remove("is-visible");
+
+      var order = buildOrder();
+      if (order.bottles === 0) {
+        linesError.textContent = dict["order.errNoBottles"];
+        linesError.hidden = false;
+        lines[0].querySelector(".order-qty").focus();
+        return;
+      }
+
+      var postcode = form.elements["postcode"];
+      if (postcode) postcode.setCustomValidity("");
+      if (postcode && postcode.value && !postcode.checkValidity()) {
+        postcode.setCustomValidity(dict["order.errPostcode"]);
+      }
       if (!form.checkValidity()) {
         form.reportValidity();
         return;
       }
 
-      var dict = translations[getLang()] || translations.nl;
+      if (FORM_ENDPOINT.indexOf("YOUR_FORM_ID") !== -1) {
+        sendMailto(order);
+        status.textContent = dict["order.mailto"];
+        status.dataset.state = "success";
+        status.classList.add("is-visible");
+        return;
+      }
+
       submitBtn.setAttribute("data-loading", "true");
       submitBtn.disabled = true;
       submitBtn.querySelector(".btn-label").textContent = dict["order.sending"];
-      status.className = "form-status";
-      status.classList.remove("is-visible");
 
       var data = new FormData(form);
+      lines.forEach(function (line) {
+        if (!qtyOf(line)) data.delete(line.querySelector(".order-qty").name);
+      });
+      data.set("_subject", "Nieuwe bestelling — Druif & Draad (" + order.bottles + " fles(sen), " + formatEuro(order.amount) + ")");
+      data.set("bestelling", order.rows.join("\n"));
+      data.set("totaal", order.bottles + " fles(sen), " + formatEuro(order.amount) + " incl. btw");
+      data.set("bezorgadres", addressText());
 
       fetch(FORM_ENDPOINT, {
         method: "POST",
@@ -494,12 +682,13 @@
             status.dataset.state = "success";
             status.classList.add("is-visible");
             form.reset();
+            updateTotals();
           } else {
             throw new Error("Form submission failed");
           }
         })
         .catch(function () {
-          status.innerHTML = dict["order.error"] + ' <a href="mailto:info@druifendraad.nl">info@druifendraad.nl</a>.';
+          status.innerHTML = dict["order.error"] + ' <a href="mailto:' + ORDER_EMAIL + '">' + ORDER_EMAIL + '</a>.';
           status.dataset.state = "error";
           status.classList.add("is-visible");
         })
