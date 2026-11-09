@@ -77,6 +77,19 @@
             <div class="bars" id="dash-months"></div>
           </div>
         </div>
+        <div class="panels">
+          <div>
+            <h2>Bestellingen per plaats</h2>
+            <div class="toolbar">
+              <label class="visually-hidden" for="dash-place-mode">Indeling</label>
+              <select id="dash-place-mode">
+                <option value="city">Per plaats</option>
+                <option value="area">Per postcodegebied (eerste 2 cijfers)</option>
+              </select>
+            </div>
+            <div class="table-wrap"><table class="data" id="dash-places"><thead><tr><th>Gebied</th><th class="num">Bestellingen</th><th class="num">Flessen</th><th class="num">Omzet</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </div>
         <p class="hint footnote">Omzet telt alle bestellingen behalve geannuleerde, inclusief btw. Retouren worden apart getoond en niet van de omzet afgetrokken.</p>
       </section>
 
@@ -96,6 +109,7 @@
           <label class="visually-hidden" for="order-search">Zoeken</label>
           <input id="order-search" type="search" placeholder="Zoek op naam, plaats, e-mail of nummer">
           <button type="button" class="btn btn-small" id="refresh">Vernieuwen</button>
+          <button type="button" class="btn btn-small" id="export-orders">Exporteer CSV</button>
         </div>
         <div class="table-wrap">
           <table class="data" id="orders-table">
@@ -110,6 +124,9 @@
 
       <!-- Facturen -->
       <section id="tab-invoices" hidden>
+        <div class="toolbar">
+          <button type="button" class="btn btn-small" id="export-invoices">Exporteer facturen en creditnota’s (CSV)</button>
+        </div>
         <div class="table-wrap">
           <table class="data" id="invoices-table">
             <thead>
@@ -119,6 +136,17 @@
           </table>
         </div>
         <p class="empty" id="invoices-empty" hidden>Er zijn nog geen facturen gemaakt.</p>
+
+        <h2>Creditnota’s</h2>
+        <div class="table-wrap">
+          <table class="data" id="credits-table">
+            <thead>
+              <tr><th>Creditnr.</th><th>Datum</th><th>Betreft factuur</th><th>Klant</th><th class="num">Bedrag</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="empty" id="credits-empty" hidden>Er zijn nog geen creditnota’s.</p>
       </section>
 
       <!-- Instellingen -->

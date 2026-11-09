@@ -28,7 +28,10 @@
   }
 
   var numberFmt = new Intl.NumberFormat("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  function money(n) { return "€ " + numberFmt.format(Number(n) || 0); }
+  function money(n) {
+    var v = Number(n) || 0;
+    return (v < 0 ? "-" : "") + "€ " + numberFmt.format(Math.abs(v));
+  }
 
   function dateOnly(iso) { // "2026-11-09" -> "09-11-2026"
     return String(iso || "").split("-").reverse().join("-");
@@ -83,6 +86,8 @@
     orders: [],
     invoices: [],   // nieuwste eerst
     returns: [],
+    creditNotes: [],
+    changes: [],
     settings: null,
     products: []
   };
@@ -192,7 +197,9 @@
       sb.from("invoices").select("*").order("invoice_number", { ascending: false }),
       sb.from("settings").select("*").eq("id", 1).maybeSingle(),
       sb.from("products").select("*").order("sort_order", { ascending: true }),
-      fetchAll("product_returns", "*", "created_at", false)
+      fetchAll("product_returns", "*", "created_at", false),
+      fetchAll("credit_notes", "*", "credit_number", false),
+      fetchAll("order_changes", "*", "changed_at", false)
     ]).then(function (results) {
       var failed = results.filter(function (r) { return r.error; })[0];
       if (failed) {
@@ -204,6 +211,8 @@
       state.settings = results[2].data;
       state.products = results[3].data || [];
       state.returns = results[4].data || [];
+      state.creditNotes = results[5].data || [];
+      state.changes = results[6].data || [];
       renderAll();
     }).catch(function () {
       showLoadError("De gegevens konden niet worden geladen. Controleer je internetverbinding en vernieuw.");
@@ -253,9 +262,13 @@
     return hay.indexOf(q) !== -1;
   }
 
-  function renderOrders() {
+  function visibleOrders() {
     var q = $("#order-search").value.trim().toLowerCase();
-    var rows = state.orders.filter(function (o) { return matchesFilter(o) && matchesSearch(o, q); });
+    return state.orders.filter(function (o) { return matchesFilter(o) && matchesSearch(o, q); });
+  }
+
+  function renderOrders() {
+    var rows = visibleOrders();
     var tbody = $("#orders-table tbody");
     tbody.textContent = "";
     rows.forEach(function (o) {
@@ -271,7 +284,7 @@
         h("td", { text: o.city }),
         h("td", { class: "num", text: String(bottlesOf(o)) }),
         h("td", { class: "num", text: money(o.total_incl) }),
-        h("td", {}, [badge(o.status)]),
+        h("td", {}, [badge(o.status), o.edited_at ? h("span", { class: "badge badge-edited", text: "Aangepast" }) : null]),
         h("td", { text: inv ? inv.invoice_number : "–" })
       ]);
       tbody.appendChild(tr);
@@ -294,16 +307,19 @@
 
   var dialog = $("#order-dialog");
   var openOrderId = null;
+  var editingOrder = false;
 
   function closeDialog() {
     if (dialog.open) dialog.close();
     openOrderId = null;
+    editingOrder = false;
   }
   dialog.addEventListener("click", function (e) { if (e.target === dialog) closeDialog(); });
   dialog.addEventListener("close", function () { openOrderId = null; });
 
   function openOrder(id) {
     openOrderId = id;
+    editingOrder = false;
     renderDialog();
     if (!dialog.open) dialog.showModal();
   }
@@ -335,6 +351,7 @@
         renderOrders();
         renderDashboard();
         toast("Status opgeslagen");
+        refreshChanges(order);
       });
     });
 
@@ -372,7 +389,10 @@
     ]));
     dialog.setAttribute("aria-labelledby", "dialog-title");
 
-    dialog.appendChild(h("div", { class: "dialog-section row" }, [h("strong", { text: "Status" }), statusSelect]));
+    dialog.appendChild(h("div", { class: "dialog-section row" }, [
+      h("strong", { text: "Status" }), statusSelect,
+      order.edited_at ? h("span", { class: "badge badge-edited", text: "Aangepast op " + dateTime(order.edited_at) }) : null
+    ]));
 
     dialog.appendChild(h("div", { class: "detail-grid" }, [
       h("div", {}, [
@@ -393,19 +413,7 @@
       dialog.appendChild(h("p", { class: "message-box", text: order.message }));
     }
 
-    dialog.appendChild(h("h3", { text: "Bestelling" }));
-    dialog.appendChild(h("table", { class: "items" }, [
-      h("tbody", {}, items.map(function (it) {
-        return h("tr", {}, [
-          h("td", { text: it.quantity + " × " + it.product_name }),
-          h("td", { class: "num", text: money(it.unit_price_incl) }),
-          h("td", { class: "num", text: money(it.quantity * it.unit_price_incl) })
-        ]);
-      })),
-      h("tfoot", {}, [h("tr", {}, [
-        h("td", { text: "Totaal incl. btw" }), h("td"), h("td", { class: "num", text: money(order.total_incl) })
-      ])])
-    ]));
+    dialog.appendChild(itemsSection(order, items, inv));
 
     dialog.appendChild(h("div", { class: "dialog-section" }, [
       h("h3", { text: "Interne notitie (de klant ziet dit niet)" }),
@@ -423,6 +431,156 @@
 
     dialog.appendChild(h("div", { class: "dialog-section" }, [h("h3", { text: "Factuur" }), invoiceBox]));
     dialog.appendChild(returnsSection(order));
+    dialog.appendChild(historySection(order));
+  }
+
+  /* ============================================================
+     Bestelling aanpassen en logboek
+     ============================================================ */
+
+  var EDIT_ERRORS = {
+    has_invoice: "Er is al een factuur voor deze bestelling, dus aanpassen kan niet meer. Te veel geleverd? Registreer een retour met creditnota.",
+    has_returns: "Er zijn al retouren geregistreerd; aanpassen kan niet meer.",
+    order_cancelled: "Een geannuleerde bestelling kan niet worden aangepast.",
+    no_change: "Er is niets gewijzigd.",
+    no_items: "Een bestelling moet minstens één fles bevatten. Zet de bestelling op Geannuleerd als hij vervalt.",
+    invalid_quantity: "Vul per wijn een heel aantal tussen 0 en 99 in.",
+    unknown_product: "Deze wijn is niet (meer) beschikbaar."
+  };
+
+  function itemsTable(order, items) {
+    return h("table", { class: "items" }, [
+      h("tbody", {}, items.map(function (it) {
+        return h("tr", {}, [
+          h("td", { text: it.quantity + " × " + it.product_name }),
+          h("td", { class: "num", text: money(it.unit_price_incl) }),
+          h("td", { class: "num", text: money(it.quantity * it.unit_price_incl) })
+        ]);
+      })),
+      h("tfoot", {}, [h("tr", {}, [
+        h("td", { text: "Totaal incl. btw" }), h("td"), h("td", { class: "num", text: money(order.total_incl) })
+      ])])
+    ]);
+  }
+
+  function itemsSection(order, items, inv) {
+    var wrap = h("div", { class: "dialog-section" }, [h("h3", { text: "Bestelling" })]);
+    if (editingOrder) {
+      wrap.appendChild(itemsEditor(order, items));
+      return wrap;
+    }
+    wrap.appendChild(itemsTable(order, items));
+    var hasReturns = state.returns.some(function (r) { return r.order_id === order.id; });
+    if (order.status === "geannuleerd") return wrap;
+    if (inv) {
+      wrap.appendChild(h("p", { class: "hint", text: EDIT_ERRORS.has_invoice }));
+    } else if (hasReturns) {
+      wrap.appendChild(h("p", { class: "hint", text: EDIT_ERRORS.has_returns }));
+    } else {
+      wrap.appendChild(h("button", {
+        type: "button", class: "btn btn-small", id: "dlg-edit-order", text: "Bestelling aanpassen",
+        onclick: function () { editingOrder = true; renderDialog(); }
+      }));
+    }
+    return wrap;
+  }
+
+  function itemsEditor(order, items) {
+    var existing = {};
+    items.forEach(function (it) { existing[it.product_slug] = it; });
+    var rows = [];
+    state.products.filter(function (p) { return p.active; }).forEach(function (p) {
+      var ex = existing[p.slug];
+      rows.push({ slug: p.slug, name: p.name, price: ex ? Number(ex.unit_price_incl) : Number(p.price_incl), qty: ex ? ex.quantity : 0 });
+    });
+    items.forEach(function (it) {
+      if (!rows.some(function (r) { return r.slug === it.product_slug; })) {
+        rows.push({ slug: it.product_slug, name: it.product_name, price: Number(it.unit_price_incl), qty: it.quantity });
+      }
+    });
+
+    var totalEl = h("span", { class: "num", text: money(order.total_incl) });
+    function current() {
+      return rows.map(function (r) {
+        var v = parseInt(r.input.value, 10);
+        return { row: r, qty: isNaN(v) ? 0 : v };
+      });
+    }
+    function recompute() {
+      var total = current().reduce(function (t, c) { return t + Math.max(0, c.qty) * c.row.price; }, 0);
+      totalEl.textContent = money(total);
+    }
+
+    var box = h("div", { class: "edit-box" });
+    rows.forEach(function (r) {
+      r.input = h("input", { type: "number", min: "0", max: "99", step: "1", value: String(r.qty), "aria-label": "Aantal " + r.name });
+      r.input.addEventListener("input", recompute);
+      box.appendChild(h("div", { class: "edit-row" }, [
+        h("span", { text: "Druif & Draad " + r.name }),
+        h("span", { class: "num", text: money(r.price) }),
+        r.input
+      ]));
+    });
+    box.appendChild(h("div", { class: "edit-total" }, [h("span", { text: "Nieuw totaal incl. btw" }), totalEl]));
+
+    var reason = h("input", { type: "text", maxlength: "500", placeholder: "bijv. klant belde: 2 flessen te veel besteld" });
+    box.appendChild(h("label", { class: "reason" }, ["Reden van de aanpassing (komt in het logboek)", reason]));
+
+    var save = h("button", { type: "button", class: "btn btn-primary btn-small", text: "Aanpassing opslaan" });
+    var cancel = h("button", { type: "button", class: "btn btn-small", text: "Annuleren", onclick: function () { editingOrder = false; renderDialog(); } });
+    save.addEventListener("click", function () {
+      var counts = current();
+      var bad = counts.some(function (c) { return !(c.qty >= 0 && c.qty <= 99); });
+      if (bad) { toast(EDIT_ERRORS.invalid_quantity, true); return; }
+      var bottles = counts.reduce(function (t, c) { return t + c.qty; }, 0);
+      if (bottles === 0) { toast(EDIT_ERRORS.no_items, true); return; }
+      var changed = counts.some(function (c) { return c.qty !== c.row.qty; });
+      if (!changed) { toast(EDIT_ERRORS.no_change, true); return; }
+      var newTotal = counts.reduce(function (t, c) { return t + c.qty * c.row.price; }, 0);
+      if (!window.confirm("Bestelling #" + order.order_number + " aanpassen?\n\nTotaal van " + money(order.total_incl) + " naar " + money(newTotal) + ".\nDe aanpassing wordt vastgelegd in het logboek.")) return;
+
+      var payload = {};
+      counts.forEach(function (c) { payload[c.row.slug] = c.qty; });
+      save.disabled = true;
+      sb.rpc("update_order_items", { p_order_id: order.id, p_items: payload, p_reason: reason.value.trim() || null }).then(function (res) {
+        if (res.error) {
+          save.disabled = false;
+          toast(EDIT_ERRORS[res.error.message] || "Aanpassen is niet gelukt. Probeer het opnieuw.", true);
+          return;
+        }
+        editingOrder = false;
+        loadAll().then(function () { renderDialog(); toast("Bestelling aangepast en vastgelegd"); });
+      });
+    });
+    box.appendChild(h("div", { class: "row" }, [save, cancel]));
+    return box;
+  }
+
+  function historySection(order) {
+    var mine = state.changes.filter(function (c) { return c.order_id === order.id; });
+    var box = h("div", { class: "dialog-section", id: "dlg-history" });
+    if (!mine.length) return box;
+    box.appendChild(h("h3", { text: "Logboek" }));
+    box.appendChild(h("ul", { class: "history" }, mine.map(function (c) {
+      var detail = c.kind === "items" && c.old_total !== null && c.new_total !== null
+        ? " (totaal " + money(c.old_total) + " → " + money(c.new_total) + ")" : "";
+      return h("li", {}, [
+        c.summary + detail,
+        h("span", { class: "meta", text: dateTime(c.changed_at) + (c.changed_by_email ? " · " + c.changed_by_email : "") }),
+        c.reason ? h("span", { class: "meta", text: "Reden: " + c.reason }) : null
+      ]);
+    })));
+    return box;
+  }
+
+  // Na een statuswijziging het logboek opnieuw ophalen, zonder de rest van het venster te vernieuwen.
+  function refreshChanges(order) {
+    fetchAll("order_changes", "*", "changed_at", false).then(function (res) {
+      if (res.error) return;
+      state.changes = res.data || [];
+      var current = $("#dlg-history");
+      if (current && openOrderId === order.id) current.replaceWith(historySection(order));
+    });
   }
 
   /* ============================================================
@@ -443,13 +601,24 @@
     var returned = mine.reduce(function (sum, r) { return sum + r.bottles; }, 0);
     var left = ordered - returned;
 
+    var hasInvoice = !!invoiceFor(order.id);
     var list = h("ul", { class: "returns-list" }, mine.map(function (r) {
+      var cn = creditNoteForReturn(r.id);
+      var actions = [];
+      if (cn) {
+        actions.push(h("button", { type: "button", class: "btn btn-small", text: "Creditnota " + cn.credit_number, onclick: function () { downloadCredit(cn); } }));
+      } else {
+        if (Number(r.refund_incl) > 0 && hasInvoice) {
+          actions.push(h("button", { type: "button", class: "btn btn-primary btn-small", text: "Creditnota maken", onclick: function () { makeCreditNote(r); } }));
+        }
+        actions.push(h("button", { type: "button", class: "btn btn-small", text: "Verwijderen", onclick: function () { removeReturn(r, order); } }));
+      }
       return h("li", {}, [
         h("span", { class: "ret-text" }, [
           r.bottles + (r.bottles === 1 ? " fles" : " flessen") + " retour — " + money(r.refund_incl) + " terugbetaald",
           h("span", { class: "ret-meta", text: dateTime(r.created_at) + (r.reason ? " · " + r.reason : "") })
         ]),
-        h("button", { type: "button", class: "btn btn-small", text: "Verwijderen", onclick: function () { removeReturn(r, order); } })
+        h("span", { class: "ret-actions" }, actions)
       ]);
     }));
 
@@ -494,6 +663,39 @@
     });
     box.appendChild(form);
     return box;
+  }
+
+  function creditNoteForReturn(returnId) {
+    for (var i = 0; i < state.creditNotes.length; i++) {
+      if (state.creditNotes[i].return_id === returnId) return state.creditNotes[i];
+    }
+    return null;
+  }
+
+  var CREDIT_ERRORS = {
+    no_invoice: "Maak eerst een factuur voor deze bestelling.",
+    no_refund: "Er is niets terugbetaald, dus er is geen creditnota nodig."
+  };
+
+  function makeCreditNote(ret) {
+    var ok = window.confirm(
+      "Creditnota maken voor " + money(ret.refund_incl) + "?\n\n" +
+      "Het nummer wordt direct vastgelegd en de creditnota kan daarna niet meer worden gewijzigd of verwijderd. De retour kan dan ook niet meer worden verwijderd."
+    );
+    if (!ok) return;
+    sb.rpc("create_credit_note", { p_return_id: ret.id }).then(function (res) {
+      if (res.error || !res.data) {
+        toast(CREDIT_ERRORS[res.error && res.error.message] || "De creditnota kon niet worden gemaakt.", true);
+        return;
+      }
+      var cn = Array.isArray(res.data) ? res.data[0] : res.data;
+      state.creditNotes = state.creditNotes.filter(function (c) { return c.id !== cn.id; });
+      state.creditNotes.unshift(cn);
+      renderInvoices();
+      renderDialog();
+      toast("Creditnota " + cn.credit_number + " gemaakt");
+      downloadCredit(cn);
+    });
   }
 
   function removeReturn(ret, order) {
@@ -618,8 +820,6 @@
 
     // Verkocht per wijn
     var perWine = {};
-    var ids = {};
-    inPeriod.forEach(function (o) { ids[o.id] = true; });
     inPeriod.forEach(function (o) {
       (o.order_items || []).forEach(function (it) {
         var w = perWine[it.product_name] || (perWine[it.product_name] = { bottles: 0, revenue: 0 });
@@ -638,6 +838,36 @@
       ]));
     });
     if (!names.length) wineBody.appendChild(h("tr", {}, [h("td", { text: "Nog geen verkopen in deze periode.", colspan: "3" })]));
+
+    // Bestellingen per plaats of postcodegebied
+    var byArea = {};
+    inPeriod.forEach(function (o) {
+      var area = $("#dash-place-mode").value === "area";
+      var key = area ? String(o.postcode).replace(/\s/g, "").slice(0, 2) : String(o.city).trim().toLowerCase();
+      var label = area ? key + "xx" : String(o.city).trim();
+      var a = byArea[key] || (byArea[key] = { label: label, orders: 0, bottles: 0, revenue: 0 });
+      a.orders += 1;
+      a.bottles += bottlesOf(o);
+      a.revenue += Number(o.total_incl);
+    });
+    var areas = Object.keys(byArea).map(function (k) { return byArea[k]; }).sort(function (x, y) { return y.revenue - x.revenue; });
+    if (areas.length > 10) {
+      var rest = areas.slice(9).reduce(function (t, a) {
+        return { label: "Overige (" + (areas.length - 9) + ")", orders: t.orders + a.orders, bottles: t.bottles + a.bottles, revenue: t.revenue + a.revenue };
+      }, { label: "", orders: 0, bottles: 0, revenue: 0 });
+      areas = areas.slice(0, 9).concat([rest]);
+    }
+    var placeBody = $("#dash-places tbody");
+    placeBody.textContent = "";
+    areas.forEach(function (a) {
+      placeBody.appendChild(h("tr", {}, [
+        h("td", { text: a.label }),
+        h("td", { class: "num", text: String(a.orders) }),
+        h("td", { class: "num", text: String(a.bottles) }),
+        h("td", { class: "num", text: money(a.revenue) })
+      ]));
+    });
+    if (!areas.length) placeBody.appendChild(h("tr", {}, [h("td", { text: "Nog geen bestellingen in deze periode.", colspan: "4" })]));
 
     // Omzet per maand (laatste 12 maanden, los van de gekozen periode)
     var thisMonth = monthKey(Date.now());
@@ -664,6 +894,7 @@
   }
 
   $("#dash-period").addEventListener("change", renderDashboard);
+  $("#dash-place-mode").addEventListener("change", renderDashboard);
 
   /* ============================================================
      Factuur maken
@@ -728,10 +959,26 @@
     });
     $("#invoices-empty").hidden = state.invoices.length > 0;
     $("#invoices-table").hidden = state.invoices.length === 0;
+
+    var cbody = $("#credits-table tbody");
+    cbody.textContent = "";
+    state.creditNotes.forEach(function (cn) {
+      var customer = (cn.snapshot && cn.snapshot.customer) || {};
+      cbody.appendChild(h("tr", {}, [
+        h("td", { text: cn.credit_number }),
+        h("td", { text: dateOnly(cn.issued_on) }),
+        h("td", { text: (cn.snapshot && cn.snapshot.invoice_number) || "" }),
+        h("td", { text: customer.name || "" }),
+        h("td", { class: "num", text: money(-cn.total_incl) }),
+        h("td", {}, [h("button", { type: "button", class: "btn btn-small", text: "PDF", onclick: function () { downloadCredit(cn); } })])
+      ]));
+    });
+    $("#credits-empty").hidden = state.creditNotes.length > 0;
+    $("#credits-table").hidden = state.creditNotes.length === 0;
   }
 
   /* ============================================================
-     PDF
+     PDF (factuur en creditnota)
      ============================================================ */
 
   var logoPromise;
@@ -755,14 +1002,64 @@
     return logoPromise;
   }
 
-  function buildPdf(inv, logo) {
+  // Beide documenten worden eerst naar hetzelfde model vertaald en daarna getekend.
+  function invoiceModel(inv) {
+    var snap = inv.snapshot || {};
+    var seller = snap.seller || {};
+    return {
+      title: "FACTUUR",
+      meta: [
+        ["Factuurnummer", inv.invoice_number],
+        ["Factuurdatum", dateOnly(inv.issued_on)],
+        ["Vervaldatum", dateOnly(inv.due_on)],
+        ["Bestelnummer", "#" + (snap.order_number || "")]
+      ],
+      seller: seller,
+      customer: snap.customer || {},
+      lines: (snap.lines || []).map(function (l) {
+        return { desc: "Druif & Draad " + l.name, qty: l.quantity, unit: l.unit_price_incl, total: l.line_total_incl };
+      }),
+      vatRate: inv.vat_rate, excl: inv.total_excl, vat: inv.vat_amount, incl: inv.total_incl,
+      payText: "Wij verzoeken u het bedrag van " + money(inv.total_incl) + " vóór " + dateOnly(inv.due_on) +
+        " over te maken op " + (seller.iban || "") + " t.n.v. " + (seller.company_name || "") +
+        ", onder vermelding van " + inv.invoice_number + ".",
+      footerNote: seller.footer_note
+    };
+  }
+
+  function creditModel(cn) {
+    var snap = cn.snapshot || {};
+    var seller = snap.seller || {};
+    var amount = Number(cn.total_incl);
+    var bottles = snap.bottles || 0;
+    return {
+      title: "CREDITNOTA",
+      meta: [
+        ["Creditnotanummer", cn.credit_number],
+        ["Datum", dateOnly(cn.issued_on)],
+        ["Betreft factuur", snap.invoice_number || ""],
+        ["Bestelnummer", "#" + (snap.order_number || "")]
+      ],
+      seller: seller,
+      customer: snap.customer || {},
+      lines: [{
+        desc: "Retour: " + bottles + (bottles === 1 ? " fles" : " flessen"),
+        sub: snap.reason || "",
+        qty: 1, unit: -amount, total: -amount
+      }],
+      vatRate: cn.vat_rate, excl: -cn.total_excl, vat: -cn.vat_amount, incl: -amount,
+      payText: "Het bedrag van " + money(amount) + " is aan u terugbetaald. Deze creditnota hoort bij factuur " +
+        (snap.invoice_number || "") + ".",
+      footerNote: seller.footer_note
+    };
+  }
+
+  function renderPdf(model, logo) {
     var jsPDF = window.jspdf && window.jspdf.jsPDF;
     if (!jsPDF) throw new Error("jsPDF niet geladen");
     var doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
-    var snap = inv.snapshot || {};
-    var seller = snap.seller || {};
-    var customer = snap.customer || {};
-    var lines = snap.lines || [];
+    var seller = model.seller;
+    var customer = model.customer;
     var L = 20, R = 190;
     var y;
 
@@ -785,36 +1082,28 @@
     });
 
     doc.setFont("helvetica", "bold"); doc.setFontSize(22); dark();
-    text("FACTUUR", L, 58);
+    text(model.title, L, 58);
 
     doc.setFontSize(10);
-    var meta = [
-      ["Factuurnummer", inv.invoice_number],
-      ["Factuurdatum", dateOnly(inv.issued_on)],
-      ["Vervaldatum", dateOnly(inv.due_on)],
-      ["Bestelnummer", "#" + (snap.order_number || "")]
-    ];
     y = 68;
-    meta.forEach(function (row) {
+    model.meta.forEach(function (row) {
       doc.setFont("helvetica", "normal"); gray(); text(row[0], L, y);
       doc.setFont("helvetica", "bold"); dark(); text(row[1], L + 38, y);
       y += 5.5;
     });
 
-    doc.setFont("helvetica", "normal"); gray(); text("Factuur aan", 120, 68);
-    dark(); doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal"); gray(); text(model.title === "FACTUUR" ? "Factuur aan" : "Creditnota aan", 120, 68);
+    dark();
     var cy = 73.5;
-    var address = [
+    [
       customer.name,
       (customer.street || "") + " " + (customer.house_number || "") + (customer.addition ? " " + customer.addition : ""),
       (customer.postcode || "") + " " + (customer.city || "")
-    ];
-    address.forEach(function (line, i) {
+    ].forEach(function (line, i) {
       doc.setFont("helvetica", i === 0 ? "bold" : "normal");
       text(line, 120, cy); cy += 5.5;
     });
 
-    // Tabel
     var top = 105;
     doc.setFillColor(246, 241, 230);
     doc.rect(L, top, R - L, 8, "F");
@@ -826,46 +1115,46 @@
 
     doc.setFont("helvetica", "normal"); doc.setFontSize(10);
     y = top + 14;
-    lines.forEach(function (line) {
-      text("Druif & Draad " + line.name, L + 2, y);
-      text(String(line.quantity), 118, y, { align: "right" });
-      text(money(line.unit_price_incl), 152, y, { align: "right" });
-      text(money(line.line_total_incl), R - 2, y, { align: "right" });
+    model.lines.forEach(function (line) {
+      dark(); doc.setFontSize(10);
+      text(line.desc, L + 2, y);
+      text(String(line.qty), 118, y, { align: "right" });
+      text(money(line.unit), 152, y, { align: "right" });
+      text(money(line.total), R - 2, y, { align: "right" });
+      if (line.sub) {
+        gray(); doc.setFontSize(8.5);
+        var sub = doc.splitTextToSize(line.sub, 85);
+        doc.text(sub, L + 2, y + 4.5);
+        y += sub.length * 4;
+      }
       doc.setDrawColor(225, 217, 200);
       doc.line(L, y + 2.5, R, y + 2.5);
       y += 8;
     });
 
-    // Totalen
     y += 4;
     doc.setFontSize(10);
-    gray(); text("Totaal excl. btw", 140, y); dark(); text(money(inv.total_excl), R - 2, y, { align: "right" });
+    gray(); text("Totaal excl. btw", 140, y); dark(); text(money(model.excl), R - 2, y, { align: "right" });
     y += 6;
-    gray(); text("BTW " + numberFmt.format(inv.vat_rate) + "%", 140, y); dark(); text(money(inv.vat_amount), R - 2, y, { align: "right" });
+    gray(); text("BTW " + numberFmt.format(model.vatRate) + "%", 140, y); dark(); text(money(model.vat), R - 2, y, { align: "right" });
     y += 3;
     doc.setDrawColor(42, 38, 32);
     doc.line(140, y, R, y);
     y += 6;
     doc.setFont("helvetica", "bold"); doc.setFontSize(11);
-    text("Totaal incl. btw", 140, y); text(money(inv.total_incl), R - 2, y, { align: "right" });
+    text("Totaal incl. btw", 140, y); text(money(model.incl), R - 2, y, { align: "right" });
 
-    // Betaalinformatie
     y += 16;
     doc.setFont("helvetica", "normal"); doc.setFontSize(10); dark();
-    var pay = "Wij verzoeken u het bedrag van " + money(inv.total_incl) + " vóór " + dateOnly(inv.due_on) +
-      " over te maken op " + (seller.iban || "") + " t.n.v. " + (seller.company_name || "") +
-      ", onder vermelding van " + inv.invoice_number + ".";
-    var wrapped = doc.splitTextToSize(pay, R - L);
+    var wrapped = doc.splitTextToSize(model.payText, R - L);
     doc.text(wrapped, L, y);
     y += wrapped.length * 5 + 3;
 
-    if (seller.footer_note) {
+    if (model.footerNote) {
       gray();
-      var note = doc.splitTextToSize(seller.footer_note, R - L);
-      doc.text(note, L, y);
+      doc.text(doc.splitTextToSize(model.footerNote, R - L), L, y);
     }
 
-    // Voet
     doc.setDrawColor(225, 217, 200);
     doc.line(L, 278, R, 278);
     doc.setFontSize(8); gray();
@@ -880,16 +1169,85 @@
     return doc;
   }
 
-  function downloadInvoice(inv) {
+  function downloadPdf(model, filename) {
     loadLogo().then(function (logo) {
       try {
-        var doc = buildPdf(inv, logo);
-        doc.save("Factuur " + inv.invoice_number + ".pdf");
+        renderPdf(model, logo).save(filename);
       } catch (err) {
         toast("De PDF kon niet worden gemaakt.", true);
       }
     });
   }
+  function downloadInvoice(inv) { downloadPdf(invoiceModel(inv), "Factuur " + inv.invoice_number + ".pdf"); }
+  function downloadCredit(cn) { downloadPdf(creditModel(cn), "Creditnota " + cn.credit_number + ".pdf"); }
+
+  /* ============================================================
+     CSV-export (voor Excel en de boekhouding)
+     ============================================================ */
+
+  function num(n) { return { raw: (Math.round(Number(n) * 100) / 100).toFixed(2).replace(".", ",") }; }
+
+  function csvCell(v) {
+    if (v && typeof v === "object" && "raw" in v) return v.raw;
+    var str = v === null || v === undefined ? "" : String(v);
+    // Voorkom dat Excel tekst van klanten als formule uitvoert.
+    if (/^[=+\-@\t\r]/.test(str)) str = "'" + str;
+    if (/[";\n\r]/.test(str)) str = '"' + str.replace(/"/g, '""') + '"';
+    return str;
+  }
+
+  function downloadCsv(filename, rows) {
+    var body = "﻿" + rows.map(function (r) { return r.map(csvCell).join(";"); }).join("\r\n");
+    var url = URL.createObjectURL(new Blob([body], { type: "text/csv;charset=utf-8" }));
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+
+  function today() { return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Amsterdam" }); }
+
+  $("#export-orders").addEventListener("click", function () {
+    var rows = visibleOrders();
+    if (!rows.length) { toast("Er zijn geen bestellingen om te exporteren.", true); return; }
+    var products = state.products.slice();
+    var head = ["Bestelnummer", "Datum", "Status", "Aangepast", "Naam", "E-mail", "Telefoon", "Straat", "Huisnummer", "Toevoeging", "Postcode", "Plaats", "Flessen"]
+      .concat(products.map(function (p) { return p.name; }))
+      .concat(["Totaal incl. btw", "Factuurnummer", "Retour flessen", "Terugbetaald"]);
+    var data = rows.slice().sort(function (a, b) { return a.order_number - b.order_number; }).map(function (o) {
+      var inv = invoiceFor(o.id);
+      var rets = state.returns.filter(function (r) { return r.order_id === o.id; });
+      return [o.order_number, dateTime(o.created_at), STATUS_LABEL[o.status] || o.status, o.edited_at ? "Ja" : "Nee",
+        o.name, o.email, o.phone, o.street, o.house_number, o.addition, o.postcode, o.city, bottlesOf(o)]
+        .concat(products.map(function (p) {
+          return (o.order_items || []).filter(function (it) { return it.product_slug === p.slug; }).reduce(function (t, it) { return t + it.quantity; }, 0);
+        }))
+        .concat([num(o.total_incl), inv ? inv.invoice_number : "", sum(rets, function (r) { return r.bottles; }), num(sum(rets, function (r) { return Number(r.refund_incl); }))]);
+    });
+    downloadCsv("bestellingen-" + today() + ".csv", [head].concat(data));
+  });
+
+  $("#export-invoices").addEventListener("click", function () {
+    if (!state.invoices.length && !state.creditNotes.length) { toast("Er zijn nog geen facturen om te exporteren.", true); return; }
+    var head = ["Type", "Nummer", "Datum", "Klant", "Bestelnummer", "Excl. btw", "BTW", "Incl. btw", "BTW-percentage", "Betreft factuur", "Betaald"];
+    var data = [];
+    state.invoices.forEach(function (inv) {
+      var snap = inv.snapshot || {};
+      var order = state.orders.filter(function (o) { return o.id === inv.order_id; })[0];
+      data.push({ date: inv.issued_on, nr: inv.invoice_number, row: ["Factuur", inv.invoice_number, dateOnly(inv.issued_on), (snap.customer || {}).name,
+        snap.order_number, num(inv.total_excl), num(inv.vat_amount), num(inv.total_incl), num(inv.vat_rate), "", order && order.status === "betaald" ? "Ja" : "Nee"] });
+    });
+    state.creditNotes.forEach(function (cn) {
+      var snap = cn.snapshot || {};
+      data.push({ date: cn.issued_on, nr: cn.credit_number, row: ["Creditnota", cn.credit_number, dateOnly(cn.issued_on), (snap.customer || {}).name,
+        snap.order_number, num(-cn.total_excl), num(-cn.vat_amount), num(-cn.total_incl), num(cn.vat_rate), snap.invoice_number, ""] });
+    });
+    data.sort(function (a, b) { return a.date === b.date ? (a.nr > b.nr ? 1 : -1) : (a.date > b.date ? 1 : -1); });
+    downloadCsv("facturen-" + today() + ".csv", [head].concat(data.map(function (d) { return d.row; })));
+  });
 
   /* ============================================================
      Instellingen
