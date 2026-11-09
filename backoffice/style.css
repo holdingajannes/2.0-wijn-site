@@ -226,3 +226,37 @@ dialog::backdrop { background: rgba(20, 16, 10, 0.45); }
   .tabs { order: 3; flex: 1 1 100%; }
   .tabs button { flex: 1; padding: 0.5em 0.4em; }
 }
+
+/* ---------- Dashboard ---------- */
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 0.9rem; }
+.stat { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem 1.1rem; }
+.stat__label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+.stat__value { font-size: 1.75rem; font-weight: 600; line-height: 1.2; margin: 0.25rem 0; font-variant-numeric: tabular-nums; }
+.stat__sub { font-size: 0.85rem; color: var(--muted); }
+.todo { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.todo button {
+  font: inherit; cursor: pointer; text-align: left;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius);
+  padding: 0.7em 1em; color: var(--text); min-height: 44px;
+}
+.todo button:hover { border-color: var(--primary); }
+.todo strong { font-size: 1.15rem; margin-right: 0.35em; }
+.todo .todo-ok { color: var(--ok); padding: 0.6em 0; }
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+@media (max-width: 860px) { .panels { grid-template-columns: 1fr; } }
+.bars { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 0.6rem 1rem; }
+.bar-row { display: grid; grid-template-columns: 5.2rem 1fr 6.2rem; align-items: center; gap: 0.6rem; padding: 0.3rem 0; font-size: 0.9rem; }
+.bar-row .bar-label { color: var(--muted); }
+.bar-track { background: #f1ece0; border-radius: 999px; height: 0.7rem; overflow: hidden; }
+.bar-fill { display: block; height: 100%; background: var(--primary); border-radius: 999px; }
+.bar-row .bar-value { text-align: right; font-variant-numeric: tabular-nums; }
+.footnote { margin-top: 1.5rem; font-size: 0.85rem; }
+
+/* ---------- Retouren in het bestelvenster ---------- */
+.returns-list { list-style: none; margin: 0 0 0.75rem; padding: 0; }
+.returns-list li { display: flex; gap: 0.75rem; align-items: center; justify-content: space-between; padding: 0.5em 0; border-bottom: 1px solid var(--border); }
+.returns-list .ret-text { overflow-wrap: anywhere; }
+.returns-list .ret-meta { color: var(--muted); font-size: 0.85rem; display: block; }
+.return-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 0.9rem; }
+.return-form .span-2 { grid-column: 1 / -1; }
+@media (max-width: 560px) { .return-form { grid-template-columns: 1fr; } }

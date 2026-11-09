@@ -36,7 +36,8 @@
     <header class="topbar">
       <img class="topbar__logo" src="../assets/img/logo.png" width="657" height="196" alt="Druif &amp; Draad Wijnimport">
       <nav class="tabs" role="tablist" aria-label="Onderdelen">
-        <button type="button" role="tab" data-tab="orders" aria-selected="true">Bestellingen <span class="count" id="count-orders" hidden></span></button>
+        <button type="button" role="tab" data-tab="dashboard" aria-selected="true">Dashboard</button>
+        <button type="button" role="tab" data-tab="orders" aria-selected="false">Bestellingen <span class="count" id="count-orders" hidden></span></button>
         <button type="button" role="tab" data-tab="invoices" aria-selected="false">Facturen</button>
         <button type="button" role="tab" data-tab="settings" aria-selected="false">Instellingen</button>
       </nav>
@@ -49,8 +50,38 @@
     <main class="page">
       <p class="banner banner-error" id="load-error" role="alert" hidden></p>
 
+      <!-- Dashboard -->
+      <section id="tab-dashboard">
+        <div class="toolbar">
+          <label class="visually-hidden" for="dash-period">Periode</label>
+          <select id="dash-period">
+            <option value="month">Deze maand</option>
+            <option value="prev">Vorige maand</option>
+            <option value="year">Dit jaar</option>
+            <option value="all">Alles</option>
+          </select>
+        </div>
+
+        <div class="stats" id="dash-stats"></div>
+
+        <h2>Actie nodig</h2>
+        <div class="todo" id="dash-todo"></div>
+
+        <div class="panels">
+          <div>
+            <h2>Verkocht per wijn</h2>
+            <div class="table-wrap"><table class="data" id="dash-wines"><thead><tr><th>Wijn</th><th class="num">Flessen</th><th class="num">Omzet</th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <div>
+            <h2>Omzet per maand</h2>
+            <div class="bars" id="dash-months"></div>
+          </div>
+        </div>
+        <p class="hint footnote">Omzet telt alle bestellingen behalve geannuleerde, inclusief btw. Retouren worden apart getoond en niet van de omzet afgetrokken.</p>
+      </section>
+
       <!-- Bestellingen -->
-      <section id="tab-orders">
+      <section id="tab-orders" hidden>
         <div class="toolbar">
           <label class="visually-hidden" for="order-filter">Filter op status</label>
           <select id="order-filter">

@@ -82,6 +82,7 @@
     userId: null,
     orders: [],
     invoices: [],   // nieuwste eerst
+    returns: [],
     settings: null,
     products: []
   };
@@ -168,13 +169,30 @@
     el.hidden = !message;
   }
 
+  // Supabase geeft standaard maximaal 1000 rijen per aanvraag; haal daarom in porties op.
+  function fetchAll(table, columns, orderCol, ascending) {
+    var PAGE = 1000;
+    var all = [];
+    function next(from) {
+      return sb.from(table).select(columns).order(orderCol, { ascending: ascending }).range(from, from + PAGE - 1)
+        .then(function (res) {
+          if (res.error) return res;
+          all = all.concat(res.data || []);
+          if ((res.data || []).length < PAGE) return { data: all, error: null };
+          return next(from + PAGE);
+        });
+    }
+    return next(0);
+  }
+
   function loadAll() {
     showLoadError("");
     return Promise.all([
-      sb.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
+      fetchAll("orders", "*, order_items(*)", "created_at", false),
       sb.from("invoices").select("*").order("invoice_number", { ascending: false }),
       sb.from("settings").select("*").eq("id", 1).maybeSingle(),
-      sb.from("products").select("*").order("sort_order", { ascending: true })
+      sb.from("products").select("*").order("sort_order", { ascending: true }),
+      fetchAll("product_returns", "*", "created_at", false)
     ]).then(function (results) {
       var failed = results.filter(function (r) { return r.error; })[0];
       if (failed) {
@@ -185,6 +203,7 @@
       state.invoices = results[1].data || [];
       state.settings = results[2].data;
       state.products = results[3].data || [];
+      state.returns = results[4].data || [];
       renderAll();
     }).catch(function () {
       showLoadError("De gegevens konden niet worden geladen. Controleer je internetverbinding en vernieuw.");
@@ -203,7 +222,7 @@
     $$(".tabs [data-tab]").forEach(function (btn) {
       btn.setAttribute("aria-selected", String(btn.getAttribute("data-tab") === name));
     });
-    ["orders", "invoices", "settings"].forEach(function (t) { $("#tab-" + t).hidden = t !== name; });
+    ["dashboard", "orders", "invoices", "settings"].forEach(function (t) { $("#tab-" + t).hidden = t !== name; });
   }
   $$(".tabs [data-tab]").forEach(function (btn) {
     btn.addEventListener("click", function () { showTab(btn.getAttribute("data-tab")); });
@@ -214,6 +233,7 @@
      ============================================================ */
 
   function renderAll() {
+    renderDashboard();
     renderOrders();
     renderInvoices();
     renderSettings();
@@ -313,6 +333,7 @@
         }
         order.status = next;
         renderOrders();
+        renderDashboard();
         toast("Status opgeslagen");
       });
     });
@@ -401,7 +422,248 @@
     ]));
 
     dialog.appendChild(h("div", { class: "dialog-section" }, [h("h3", { text: "Factuur" }), invoiceBox]));
+    dialog.appendChild(returnsSection(order));
   }
+
+  /* ============================================================
+     Retouren
+     ============================================================ */
+
+  var RETURN_ERRORS = {
+    too_many_bottles: "Er worden meer flessen geretourneerd dan er zijn besteld.",
+    refund_too_high: "Het terugbetaalde bedrag is hoger dan het bestelbedrag.",
+    order_cancelled: "Voor een geannuleerde bestelling kun je geen retour registreren.",
+    invalid_bottles: "Vul een aantal flessen in (minimaal 1).",
+    invalid_refund: "Vul een geldig bedrag in (0 als er niets is terugbetaald)."
+  };
+
+  function returnsSection(order) {
+    var mine = state.returns.filter(function (r) { return r.order_id === order.id; });
+    var ordered = bottlesOf(order);
+    var returned = mine.reduce(function (sum, r) { return sum + r.bottles; }, 0);
+    var left = ordered - returned;
+
+    var list = h("ul", { class: "returns-list" }, mine.map(function (r) {
+      return h("li", {}, [
+        h("span", { class: "ret-text" }, [
+          r.bottles + (r.bottles === 1 ? " fles" : " flessen") + " retour — " + money(r.refund_incl) + " terugbetaald",
+          h("span", { class: "ret-meta", text: dateTime(r.created_at) + (r.reason ? " · " + r.reason : "") })
+        ]),
+        h("button", { type: "button", class: "btn btn-small", text: "Verwijderen", onclick: function () { removeReturn(r, order); } })
+      ]);
+    }));
+
+    var box = h("div", { class: "dialog-section" }, [h("h3", { text: "Retouren" })]);
+    if (mine.length) box.appendChild(list);
+    else box.appendChild(h("p", { class: "hint", text: "Geen retouren bij deze bestelling." }));
+
+    if (order.status === "geannuleerd" || left < 1) {
+      if (left < 1 && mine.length) box.appendChild(h("p", { class: "hint", text: "Alle flessen van deze bestelling zijn geretourneerd." }));
+      return box;
+    }
+
+    var bottles = h("input", { type: "number", min: "1", max: String(left), step: "1", value: "1", id: "ret-bottles" });
+    var refund = h("input", { type: "number", min: "0", max: String(order.total_incl), step: "0.01", value: "0", id: "ret-refund" });
+    var reason = h("input", { type: "text", maxlength: "500", id: "ret-reason", placeholder: "bijv. beschadigd, verkeerde wijn" });
+    var submit = h("button", { type: "submit", class: "btn btn-small", text: "Retour registreren" });
+    var form = h("form", { class: "return-form", novalidate: true }, [
+      h("label", {}, ["Aantal flessen (nog " + left + " mogelijk)", bottles]),
+      h("label", {}, ["Terugbetaald, incl. btw (€)", refund]),
+      h("label", { class: "span-2" }, ["Reden (optioneel)", reason]),
+      h("div", { class: "span-2" }, [submit])
+    ]);
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var n = parseInt(bottles.value, 10);
+      var amount = parseFloat(String(refund.value).replace(",", "."));
+      if (!(n >= 1) || n > left) { toast("Vul een aantal flessen in tussen 1 en " + left + ".", true); return; }
+      if (!(amount >= 0)) { toast(RETURN_ERRORS.invalid_refund, true); return; }
+      submit.disabled = true;
+      sb.rpc("register_return", { p_order_id: order.id, p_bottles: n, p_refund: amount, p_reason: reason.value.trim() || null })
+        .then(function (res) {
+          if (res.error || !res.data) {
+            submit.disabled = false;
+            toast(RETURN_ERRORS[res.error && res.error.message] || "De retour kon niet worden opgeslagen.", true);
+            return;
+          }
+          state.returns.unshift(Array.isArray(res.data) ? res.data[0] : res.data);
+          renderDashboard();
+          renderDialog();
+          toast("Retour geregistreerd");
+        });
+    });
+    box.appendChild(form);
+    return box;
+  }
+
+  function removeReturn(ret, order) {
+    if (!window.confirm("Deze retour verwijderen? Dit kan niet ongedaan worden gemaakt.")) return;
+    sb.from("product_returns").delete().eq("id", ret.id).select().then(function (res) {
+      if (res.error || !res.data || !res.data.length) { toast("Verwijderen is niet gelukt.", true); return; }
+      state.returns = state.returns.filter(function (r) { return r.id !== ret.id; });
+      renderDashboard();
+      renderDialog();
+      toast("Retour verwijderd");
+    });
+  }
+
+  /* ============================================================
+     Dashboard
+     ============================================================ */
+
+  var ymFmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Amsterdam", year: "numeric", month: "2-digit" });
+  function monthKey(ts) { // "2026-11", in Nederlandse tijd
+    var y = "", m = "";
+    ymFmt.formatToParts(new Date(ts)).forEach(function (p) {
+      if (p.type === "year") y = p.value;
+      if (p.type === "month") m = p.value;
+    });
+    return y + "-" + m;
+  }
+  function shiftMonth(key, delta) {
+    var y = parseInt(key.slice(0, 4), 10);
+    var m = parseInt(key.slice(5, 7), 10) - 1 + delta;
+    y += Math.floor(m / 12);
+    m = ((m % 12) + 12) % 12;
+    return y + "-" + String(m + 1).padStart(2, "0");
+  }
+  var MONTHS = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+  function monthLabel(key) { return MONTHS[parseInt(key.slice(5, 7), 10) - 1] + " " + key.slice(2, 4); }
+
+  // Geeft per periode een test voor een maand-sleutel en de laatste maand van de periode.
+  function periodRange(period) {
+    var now = monthKey(Date.now());
+    if (period === "month") return { has: function (k) { return k === now; }, end: now };
+    if (period === "prev") { var p = shiftMonth(now, -1); return { has: function (k) { return k === p; }, end: p }; }
+    if (period === "year") return { has: function (k) { return k.slice(0, 4) === now.slice(0, 4); }, end: now };
+    return { has: function () { return true; }, end: "9999-12" };
+  }
+
+  function sum(list, fn) { return list.reduce(function (t, x) { return t + fn(x); }, 0); }
+
+  function stat(label, value, sub) {
+    return h("div", { class: "stat" }, [
+      h("div", { class: "stat__label", text: label }),
+      h("div", { class: "stat__value", text: value }),
+      h("div", { class: "stat__sub", text: sub || "\u00a0" })
+    ]);
+  }
+
+  function goToOrders(filter) {
+    $("#order-filter").value = filter;
+    $("#order-search").value = "";
+    renderOrders();
+    showTab("orders");
+  }
+
+  function renderDashboard() {
+    var range = periodRange($("#dash-period").value);
+    var active = state.orders.filter(function (o) { return o.status !== "geannuleerd"; });
+    var inPeriod = active.filter(function (o) { return range.has(monthKey(o.created_at)); });
+    var cancelled = state.orders.filter(function (o) { return o.status === "geannuleerd" && range.has(monthKey(o.created_at)); }).length;
+
+    var count = inPeriod.length;
+    var revenue = sum(inPeriod, function (o) { return Number(o.total_incl); });
+    var vatRate = state.settings ? Number(state.settings.vat_rate) : 21;
+    var revenueExcl = revenue / (1 + vatRate / 100);
+    var average = count ? revenue / count : 0;
+
+    var rets = state.returns.filter(function (r) { return range.has(monthKey(r.created_at)); });
+    var retBottles = sum(rets, function (r) { return r.bottles; });
+    var refunded = sum(rets, function (r) { return Number(r.refund_incl); });
+
+    // Terugkerende klanten: klanten uit deze periode die in totaal vaker dan één keer hebben besteld.
+    var byCustomer = {};
+    active.forEach(function (o) {
+      if (monthKey(o.created_at) > range.end) return;
+      var key = String(o.email).trim().toLowerCase();
+      byCustomer[key] = (byCustomer[key] || 0) + 1;
+    });
+    var customers = {};
+    inPeriod.forEach(function (o) { customers[String(o.email).trim().toLowerCase()] = true; });
+    var customerKeys = Object.keys(customers);
+    var returning = customerKeys.filter(function (k) { return byCustomer[k] > 1; }).length;
+    var pct = customerKeys.length ? Math.round(returning / customerKeys.length * 100) : 0;
+
+    var invoicedIds = {};
+    state.invoices.forEach(function (i) { invoicedIds[i.order_id] = true; });
+    var openAmount = 0, openCount = 0;
+    state.invoices.forEach(function (inv) {
+      var order = state.orders.filter(function (o) { return o.id === inv.order_id; })[0];
+      if (order && order.status !== "betaald" && order.status !== "geannuleerd") {
+        openAmount += Number(inv.total_incl);
+        openCount += 1;
+      }
+    });
+
+    var stats = $("#dash-stats");
+    stats.textContent = "";
+    [
+      stat("Bestellingen", String(count), cancelled ? cancelled + " geannuleerd (niet meegeteld)" : "geen geannuleerd"),
+      stat("Totale omzet", money(revenue), money(revenueExcl) + " excl. btw"),
+      stat("Gemiddelde bestelwaarde", money(average), count ? "per bestelling, incl. btw" : "nog geen bestellingen"),
+      stat("Retouren", String(rets.length), rets.length ? retBottles + (retBottles === 1 ? " fles" : " flessen") + " · " + money(refunded) + " terugbetaald" : "geen retouren"),
+      stat("Terugkerende klanten", String(returning), customerKeys.length ? pct + "% van " + customerKeys.length + (customerKeys.length === 1 ? " klant" : " klanten") : "nog geen klanten"),
+      stat("Openstaand (gefactureerd)", money(openAmount), openCount ? openCount + (openCount === 1 ? " factuur" : " facturen") + " nog niet betaald" : "alles betaald")
+    ].forEach(function (card) { stats.appendChild(card); });
+
+    // Actie nodig
+    var fresh = state.orders.filter(function (o) { return o.status === "nieuw"; }).length;
+    var toInvoice = active.filter(function (o) { return !invoicedIds[o.id]; }).length;
+    var todo = $("#dash-todo");
+    todo.textContent = "";
+    if (fresh) todo.appendChild(h("button", { type: "button", onclick: function () { goToOrders("nieuw"); } }, [h("strong", { text: String(fresh) }), fresh === 1 ? "nieuwe bestelling" : "nieuwe bestellingen"]));
+    if (toInvoice) todo.appendChild(h("button", { type: "button", onclick: function () { goToOrders("open"); } }, [h("strong", { text: String(toInvoice) }), toInvoice === 1 ? "bestelling zonder factuur" : "bestellingen zonder factuur"]));
+    if (!fresh && !toInvoice) todo.appendChild(h("p", { class: "todo-ok", text: "Niets dat actie vraagt." }));
+
+    // Verkocht per wijn
+    var perWine = {};
+    var ids = {};
+    inPeriod.forEach(function (o) { ids[o.id] = true; });
+    inPeriod.forEach(function (o) {
+      (o.order_items || []).forEach(function (it) {
+        var w = perWine[it.product_name] || (perWine[it.product_name] = { bottles: 0, revenue: 0 });
+        w.bottles += it.quantity;
+        w.revenue += it.quantity * Number(it.unit_price_incl);
+      });
+    });
+    var wineBody = $("#dash-wines tbody");
+    wineBody.textContent = "";
+    var names = Object.keys(perWine).sort(function (a, b) { return perWine[b].bottles - perWine[a].bottles; });
+    names.forEach(function (name) {
+      wineBody.appendChild(h("tr", {}, [
+        h("td", { text: "Druif & Draad " + name }),
+        h("td", { class: "num", text: String(perWine[name].bottles) }),
+        h("td", { class: "num", text: money(perWine[name].revenue) })
+      ]));
+    });
+    if (!names.length) wineBody.appendChild(h("tr", {}, [h("td", { text: "Nog geen verkopen in deze periode.", colspan: "3" })]));
+
+    // Omzet per maand (laatste 12 maanden, los van de gekozen periode)
+    var thisMonth = monthKey(Date.now());
+    var months = [];
+    for (var i = 11; i >= 0; i--) months.push(shiftMonth(thisMonth, -i));
+    var perMonth = {};
+    active.forEach(function (o) {
+      var k = monthKey(o.created_at);
+      perMonth[k] = (perMonth[k] || 0) + Number(o.total_incl);
+    });
+    var max = Math.max.apply(null, months.map(function (k) { return perMonth[k] || 0; }).concat([1]));
+    var bars = $("#dash-months");
+    bars.textContent = "";
+    months.forEach(function (k) {
+      var value = perMonth[k] || 0;
+      var fill = h("span", { class: "bar-fill" });
+      fill.style.width = (value / max * 100) + "%";
+      bars.appendChild(h("div", { class: "bar-row" }, [
+        h("span", { class: "bar-label", text: monthLabel(k) }),
+        h("span", { class: "bar-track" }, [fill]),
+        h("span", { class: "bar-value", text: value ? money(value) : "–" })
+      ]));
+    });
+  }
+
+  $("#dash-period").addEventListener("change", renderDashboard);
 
   /* ============================================================
      Factuur maken
@@ -435,6 +697,7 @@
       state.invoices.unshift(inv);
       renderOrders();
       renderInvoices();
+      renderDashboard();
       renderDialog();
       toast("Factuur " + inv.invoice_number + " gemaakt");
       downloadInvoice(inv);

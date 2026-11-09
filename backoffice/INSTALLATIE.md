@@ -11,6 +11,9 @@ Eenmalig, ongeveer 15 minuten. Je hebt een Supabase-account nodig (gratis).
 2. Plak de volledige inhoud van `backoffice/schema.sql` en klik **Run**.
 3. Er moet "Success" staan. Zie je een fout, kopieer die dan naar Claude.
 
+### 2b. Retouren (voor het dashboard)
+Plak daarna ook de inhoud van `backoffice/migratie-02-retouren.sql` in een nieuwe query en klik op **Run**. Zonder deze stap werkt het dashboard niet en kun je geen retouren registreren. (Heb je het project vóór 9 november 2026 ingericht, dan moet je deze stap alsnog doen.)
+
 ## 3. Inlog voor 2 tot 3 personen
 1. **Authentication → Sign In / Providers → Email**: zet **Allow new users to sign up** uit (zo kan niemand zichzelf aanmelden).
 2. **Authentication → Users → Add user → Create new user**: vul e-mailadres en een sterk wachtwoord in en vink *Auto Confirm User* aan. Herhaal voor elke persoon.
