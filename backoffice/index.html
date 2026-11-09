@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self'; img-src 'self' data:; connect-src https://*.supabase.co; base-uri 'none'; form-action 'none'">
+  <title>Back office — Druif &amp; Draad</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Configuratie ontbreekt -->
+  <main class="center-card" id="view-setup" hidden>
+    <h1>Back office nog niet gekoppeld</h1>
+    <p>Vul in <code>js/config.js</code> de <strong>supabaseUrl</strong> en <strong>supabaseKey</strong> in en publiceer de site opnieuw.</p>
+  </main>
+
+  <!-- Inloggen -->
+  <main class="center-card" id="view-login" hidden>
+    <img class="login-logo" src="../assets/img/logo.png" width="657" height="196" alt="Druif &amp; Draad Wijnimport">
+    <h1>Back office</h1>
+    <form id="login-form" novalidate>
+      <label for="login-email">E-mailadres</label>
+      <input id="login-email" type="email" autocomplete="username" required>
+      <label for="login-password">Wachtwoord</label>
+      <input id="login-password" type="password" autocomplete="current-password" required>
+      <p class="form-error" id="login-error" role="alert" hidden></p>
+      <button type="submit" class="btn btn-primary" id="login-submit">Inloggen</button>
+    </form>
+  </main>
+
+  <!-- De back office -->
+  <div id="view-app" hidden>
+    <header class="topbar">
+      <img class="topbar__logo" src="../assets/img/logo.png" width="657" height="196" alt="Druif &amp; Draad Wijnimport">
+      <nav class="tabs" role="tablist" aria-label="Onderdelen">
+        <button type="button" role="tab" data-tab="orders" aria-selected="true">Bestellingen <span class="count" id="count-orders" hidden></span></button>
+        <button type="button" role="tab" data-tab="invoices" aria-selected="false">Facturen</button>
+        <button type="button" role="tab" data-tab="settings" aria-selected="false">Instellingen</button>
+      </nav>
+      <div class="topbar__user">
+        <span id="user-email"></span>
+        <button type="button" class="btn btn-small" id="logout">Uitloggen</button>
+      </div>
+    </header>
+
+    <main class="page">
+      <p class="banner banner-error" id="load-error" role="alert" hidden></p>
+
+      <!-- Bestellingen -->
+      <section id="tab-orders">
+        <div class="toolbar">
+          <label class="visually-hidden" for="order-filter">Filter op status</label>
+          <select id="order-filter">
+            <option value="open">Openstaand (nieuw, bevestigd, geleverd)</option>
+            <option value="all">Alle bestellingen</option>
+            <option value="nieuw">Nieuw</option>
+            <option value="bevestigd">Bevestigd</option>
+            <option value="geleverd">Geleverd</option>
+            <option value="betaald">Betaald</option>
+            <option value="geannuleerd">Geannuleerd</option>
+          </select>
+          <label class="visually-hidden" for="order-search">Zoeken</label>
+          <input id="order-search" type="search" placeholder="Zoek op naam, plaats, e-mail of nummer">
+          <button type="button" class="btn btn-small" id="refresh">Vernieuwen</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data" id="orders-table">
+            <thead>
+              <tr><th>Nr.</th><th>Datum</th><th>Klant</th><th>Plaats</th><th class="num">Flessen</th><th class="num">Totaal</th><th>Status</th><th>Factuur</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="empty" id="orders-empty" hidden>Geen bestellingen gevonden.</p>
+      </section>
+
+      <!-- Facturen -->
+      <section id="tab-invoices" hidden>
+        <div class="table-wrap">
+          <table class="data" id="invoices-table">
+            <thead>
+              <tr><th>Factuurnr.</th><th>Datum</th><th>Vervalt</th><th>Klant</th><th class="num">Bedrag</th><th>Bestelling</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="empty" id="invoices-empty" hidden>Er zijn nog geen facturen gemaakt.</p>
+      </section>
+
+      <!-- Instellingen -->
+      <section id="tab-settings" hidden>
+        <h2>Gegevens op de factuur</h2>
+        <p class="hint">Deze gegevens komen op elke nieuwe factuur. Een al gemaakte factuur verandert niet meer.</p>
+        <form id="settings-form" class="settings-grid" novalidate>
+          <label>Bedrijfsnaam <input name="company_name" maxlength="120" required></label>
+          <label>Adres (straat en nummer) <input name="address_line1" maxlength="120"></label>
+          <label>Postcode en plaats <input name="postcode_city" maxlength="120"></label>
+          <label>E-mailadres <input name="email" type="email" maxlength="120"></label>
+          <label>Telefoonnummer <input name="phone" maxlength="40"></label>
+          <label>KvK-nummer <input name="kvk" maxlength="20"></label>
+          <label>BTW-nummer <input name="vat_number" maxlength="30" placeholder="NL123456789B01"></label>
+          <label>IBAN <input name="iban" maxlength="40" placeholder="NL00 BANK 0123 4567 89"></label>
+          <label>BTW-percentage <input name="vat_rate" type="number" min="0" max="99.99" step="0.01" required></label>
+          <label>Betaaltermijn (dagen) <input name="payment_days" type="number" min="0" max="365" step="1" required></label>
+          <label>Voorvoegsel factuurnummer (optioneel) <input name="invoice_prefix" maxlength="10" placeholder="bijv. DD-"></label>
+          <label class="span-2">Extra tekst onderaan de factuur (optioneel) <textarea name="footer_note" rows="3" maxlength="500"></textarea></label>
+          <div class="span-2 form-actions">
+            <button type="submit" class="btn btn-primary" id="settings-save">Opslaan</button>
+            <span class="form-ok" id="settings-ok" hidden>Opgeslagen.</span>
+          </div>
+        </form>
+
+        <h2>Prijzen (alleen lezen)</h2>
+        <p class="hint">Prijzen inclusief btw zoals de database ze rekent. Een prijswijziging moet ook op de website worden doorgevoerd; anders weigert de database bestellingen met het oude bedrag.</p>
+        <div class="table-wrap">
+          <table class="data" id="products-table">
+            <thead><tr><th>Wijn</th><th class="num">Prijs incl. btw</th><th>Actief</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="order-dialog" aria-labelledby="dialog-title"></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
+  <script src="../js/config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+/* Back office — bewust eenvoudig en snel, met systeemlettertypes. */
+:root {
+  --bg: #f6f1e6;
+  --surface: #ffffff;
+  --text: #2a2620;
+  --muted: #6f675a;
+  --border: #e1d9c8;
+  --primary: #1f3d2e;
+  --primary-hover: #17301f;
+  --on-primary: #f6f1e6;
+  --accent: #9a7430;
+  --danger: #a3302a;
+  --ok: #2d6a45;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(42, 38, 32, 0.06), 0 6px 20px rgba(42, 38, 32, 0.06);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+}
+[hidden] { display: none !important; }
+h1, h2, h3 { margin: 0 0 0.5rem; line-height: 1.25; font-weight: 600; }
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.15rem; margin-top: 2rem; }
+h3 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+code { background: rgba(0,0,0,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+a { color: var(--primary); }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Knoppen en velden ---------- */
+.btn {
+  font: inherit;
+  font-weight: 500;
+  border: 1.5px solid var(--primary);
+  background: transparent;
+  color: var(--primary);
+  padding: 0.55em 1.1em;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 40px;
+}
+.btn:hover { background: rgba(31, 61, 46, 0.08); }
+.btn-primary { background: var(--primary); color: var(--on-primary); }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-small { padding: 0.3em 0.9em; min-height: 34px; font-size: 0.9rem; }
+.btn[disabled] { opacity: 0.55; cursor: progress; }
+
+input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55em 0.75em;
+  min-height: 40px;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus, .btn:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+label { display: block; font-size: 0.85rem; color: var(--muted); }
+label input, label select, label textarea { margin-top: 0.25rem; color: var(--text); font-size: 1rem; }
+
+.form-error, .banner-error {
+  color: var(--danger);
+  background: #fbeceb;
+  border: 1px solid #efc6c3;
+  border-radius: 8px;
+  padding: 0.6em 0.9em;
+  margin: 0.75rem 0;
+}
+.form-ok { color: var(--ok); font-weight: 500; }
+.banner { margin: 0 0 1rem; }
+.hint { color: var(--muted); margin: 0 0 1rem; max-width: 60ch; }
+
+/* ---------- Inloggen / melding ---------- */
+.center-card {
+  max-width: 24rem;
+  margin: 12vh auto 0;
+  padding: 2rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.login-logo { display: block; width: 14rem; max-width: 100%; height: auto; margin: 0 auto 1rem; }
+.center-card form label { margin-top: 0.9rem; }
+.center-card .btn { width: 100%; margin-top: 1rem; }
+@media (max-width: 480px) { .center-card { margin: 0; border-radius: 0; min-height: 100vh; box-shadow: none; } }
+
+/* ---------- Kop ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  padding: 0.6rem 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar__logo { height: 2.6rem; width: auto; }
+.tabs { display: flex; gap: 0.25rem; flex: 1; flex-wrap: wrap; }
+.tabs button {
+  font: inherit;
+  background: transparent;
+  border: none;
+  padding: 0.5em 0.9em;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  min-height: 40px;
+}
+.tabs button[aria-selected="true"] { background: rgba(31, 61, 46, 0.1); color: var(--primary); font-weight: 600; }
+.count {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.4em;
+  margin-left: 0.25em;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.78rem;
+  text-align: center;
+}
+.topbar__user { display: flex; align-items: center; gap: 0.75rem; color: var(--muted); font-size: 0.9rem; }
+
+.page { max-width: 72rem; margin: 0 auto; padding: 1.25rem; }
+
+/* ---------- Tabellen ---------- */
+.toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.toolbar select { flex: 0 1 22rem; }
+.toolbar input { flex: 1 1 14rem; width: auto; }
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+table.data { width: 100%; border-collapse: collapse; }
+.data th, .data td { padding: 0.7em 0.9em; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.data th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; background: #faf7ef; }
+.data tbody tr:last-child td { border-bottom: none; }
+.data tbody tr.clickable { cursor: pointer; }
+.data tbody tr.clickable:hover { background: #faf7ef; }
+.data .num { text-align: right; font-variant-numeric: tabular-nums; }
+.empty { text-align: center; color: var(--muted); padding: 2rem 0; }
+.link-btn { font: inherit; background: none; border: none; padding: 0; color: var(--primary); font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+.badge { display: inline-block; padding: 0.15em 0.7em; border-radius: 999px; font-size: 0.8rem; font-weight: 600; background: #eee; }
+.badge-nieuw { background: #fdf0d2; color: #7a5600; }
+.badge-bevestigd { background: #dfeaf7; color: #1d4a7e; }
+.badge-geleverd { background: #e5e0f4; color: #4b3a8a; }
+.badge-betaald { background: #dcefe2; color: #25613c; }
+.badge-geannuleerd { background: #f2dedc; color: #8a2d28; }
+
+/* ---------- Instellingen ---------- */
+.settings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.9rem 1.2rem; max-width: 46rem; }
+.settings-grid .span-2 { grid-column: 1 / -1; }
+.form-actions { display: flex; align-items: center; gap: 1rem; }
+@media (max-width: 640px) { .settings-grid { grid-template-columns: 1fr; } }
+
+/* ---------- Bestelling-venster ---------- */
+dialog {
+  width: min(44rem, calc(100vw - 1.5rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  border: none;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+dialog::backdrop { background: rgba(20, 16, 10, 0.45); }
+.dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+.dialog-head p { margin: 0; color: var(--muted); }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+.detail-grid p { margin: 0.15rem 0; overflow-wrap: anywhere; }
+@media (max-width: 560px) { .detail-grid { grid-template-columns: 1fr; } }
+.message-box { background: #faf7ef; border: 1px solid var(--border); border-radius: 8px; padding: 0.7em 0.9em; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 1.25rem; }
+.items { width: 100%; border-collapse: collapse; margin-bottom: 1.25rem; }
+.items th, .items td { padding: 0.45em 0.2em; border-bottom: 1px solid var(--border); text-align: left; }
+.items .num { text-align: right; font-variant-numeric: tabular-nums; }
+.items tfoot td { font-weight: 600; border-bottom: none; }
+.dialog-section { margin-bottom: 1.25rem; }
+.row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+.row select { width: auto; min-width: 12rem; }
+.invoice-box { border: 1px solid var(--border); border-radius: 8px; padding: 0.9em 1em; background: #faf7ef; }
+.invoice-box p { margin: 0 0 0.6rem; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 0.7em 1.2em;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  max-width: calc(100vw - 2rem);
+}
+.toast.is-error { background: var(--danger); }
+
+@media (max-width: 640px) {
+  .page { padding: 0.75rem; }
+  .topbar { padding: 0.5rem 0.75rem; justify-content: space-between; }
+  .tabs { order: 3; flex: 1 1 100%; }
+  .tabs button { flex: 1; padding: 0.5em 0.4em; }
+}

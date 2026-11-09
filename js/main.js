@@ -151,6 +151,7 @@
       "order.qtyMousseux": "Aantal flessen Mousseux",
       "order.errNoBottles": "Kies minstens één fles om te bestellen.",
       "order.errPostcode": "Vul een geldige postcode in, bijvoorbeeld 1234 AB.",
+      "order.errPrice": "De prijzen zijn zojuist gewijzigd. Ververs de pagina en probeer het opnieuw.",
       "order.mailto": "Je e-mailprogramma wordt geopend met je bestelling. Verstuur de e-mail om je aanvraag af te ronden.",
       "order.submit": "Verstuur bestelaanvraag",
       "order.sending": "Versturen…",
@@ -304,6 +305,7 @@
       "order.qtyMousseux": "Number of bottles Mousseux",
       "order.errNoBottles": "Please choose at least one bottle to order.",
       "order.errPostcode": "Please enter a valid postal code, for example 1234 AB.",
+      "order.errPrice": "The prices have just changed. Please refresh the page and try again.",
       "order.mailto": "Your email app will open with your order. Send the email to complete your request.",
       "order.submit": "Send order request",
       "order.sending": "Sending…",
@@ -508,7 +510,9 @@
 
     // Formulier-adres van Formspree (https://formspree.io). Bevat dit nog "YOUR_FORM_ID",
     // dan opent het formulier in plaats daarvan het e-mailprogramma van de klant met de bestelling.
-    var FORM_ENDPOINT = "https://formspree.io/f/mbggvgbg";
+    // TESTFORMULIER (mail naar Jannes). Voor de echte start terugzetten naar de info@druifendraad.nl-versie:
+    // "https://formspree.io/f/mbggvgbg"
+    var FORM_ENDPOINT = "https://formspree.io/f/mqpprzde";
     var ORDER_EMAIL = "info@druifendraad.nl";
 
     var lines = Array.prototype.slice.call(form.querySelectorAll(".order-line"));
@@ -640,6 +644,70 @@
         "&body=" + encodeURIComponent(body);
     }
 
+    var DB_CONFIG = window.DD_CONFIG || {};
+    var DB_READY = !!(DB_CONFIG.supabaseUrl && DB_CONFIG.supabaseKey);
+
+    // Bestelling opslaan in de database via de functie submit_order().
+    // De prijs wordt in de database berekend; "expected_total" is alleen een controle.
+    function sendToDb(order) {
+      var items = {};
+      lines.forEach(function (line) {
+        var q = qtyOf(line);
+        if (q) items[line.getAttribute("data-wine")] = q;
+      });
+      var payload = {
+        name: value("naam"),
+        email: value("email"),
+        phone: value("telefoon"),
+        street: value("straat"),
+        house_number: value("huisnummer"),
+        addition: value("toevoeging"),
+        postcode: value("postcode"),
+        city: value("plaats"),
+        message: value("bericht"),
+        items: items,
+        expected_total: Math.round(order.amount * 100) / 100,
+        _gotcha: value("_gotcha")
+      };
+      var headers = { "Content-Type": "application/json", apikey: DB_CONFIG.supabaseKey };
+      // Oude "anon" keys zijn een JWT en horen ook in Authorization; nieuwe keys niet.
+      if (DB_CONFIG.supabaseKey.indexOf("eyJ") === 0) headers.Authorization = "Bearer " + DB_CONFIG.supabaseKey;
+
+      return fetch(DB_CONFIG.supabaseUrl.replace(/\/+$/, "") + "/rest/v1/rpc/submit_order", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({ payload: payload })
+      }).then(function (response) {
+        return response.json().catch(function () { return {}; }).then(function (body) {
+          if (!response.ok) {
+            var err = new Error("Order not saved");
+            err.code = body && body.message;
+            throw err;
+          }
+          return body;
+        });
+      });
+    }
+
+    function sendToFormspree(order) {
+      var data = new FormData(form);
+      lines.forEach(function (line) {
+        if (!qtyOf(line)) data.delete(line.querySelector(".order-qty").name);
+      });
+      data.set("_subject", "Nieuwe bestelling — Druif & Draad (" + order.bottles + " fles(sen), " + formatEuro(order.amount) + ")");
+      data.set("bestelling", order.rows.join("\n"));
+      data.set("totaal", order.bottles + " fles(sen), " + formatEuro(order.amount) + " incl. btw");
+      data.set("bezorgadres", addressText());
+
+      return fetch(FORM_ENDPOINT, {
+        method: "POST",
+        body: data,
+        headers: { Accept: "application/json" }
+      }).then(function (response) {
+        if (!response.ok) throw new Error("Form submission failed");
+      });
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var dict = dictNow();
@@ -663,7 +731,7 @@
         return;
       }
 
-      if (FORM_ENDPOINT.indexOf("YOUR_FORM_ID") !== -1) {
+      if (!DB_READY && FORM_ENDPOINT.indexOf("YOUR_FORM_ID") !== -1) {
         sendMailto(order);
         status.textContent = dict["order.mailto"];
         status.dataset.state = "success";
@@ -675,41 +743,48 @@
       submitBtn.disabled = true;
       submitBtn.querySelector(".btn-label").textContent = dict["order.sending"];
 
-      var data = new FormData(form);
-      lines.forEach(function (line) {
-        if (!qtyOf(line)) data.delete(line.querySelector(".order-qty").name);
-      });
-      data.set("_subject", "Nieuwe bestelling — Druif & Draad (" + order.bottles + " fles(sen), " + formatEuro(order.amount) + ")");
-      data.set("bestelling", order.rows.join("\n"));
-      data.set("totaal", order.bottles + " fles(sen), " + formatEuro(order.amount) + " incl. btw");
-      data.set("bezorgadres", addressText());
-
-      fetch(FORM_ENDPOINT, {
-        method: "POST",
-        body: data,
-        headers: { Accept: "application/json" }
-      })
-        .then(function (response) {
-          if (response.ok) {
-            status.textContent = dict["order.success"];
-            status.dataset.state = "success";
-            status.classList.add("is-visible");
-            form.reset();
-            updateTotals();
-          } else {
-            throw new Error("Form submission failed");
-          }
-        })
-        .catch(function () {
+      function finish(ok, kind) {
+        if (ok) {
+          status.textContent = dict["order.success"];
+          status.dataset.state = "success";
+          form.reset();
+          updateTotals();
+        } else if (kind === "price") {
+          status.textContent = dict["order.errPrice"];
+          status.dataset.state = "error";
+        } else {
           status.innerHTML = dict["order.error"] + ' <a href="mailto:' + ORDER_EMAIL + '">' + ORDER_EMAIL + '</a>.';
           status.dataset.state = "error";
-          status.classList.add("is-visible");
-        })
-        .finally(function () {
-          submitBtn.setAttribute("data-loading", "false");
-          submitBtn.disabled = false;
-          submitBtn.querySelector(".btn-label").textContent = dict["order.submit"];
-        });
+        }
+        status.classList.add("is-visible");
+        submitBtn.setAttribute("data-loading", "false");
+        submitBtn.disabled = false;
+        submitBtn.querySelector(".btn-label").textContent = dict["order.submit"];
+      }
+
+      // Met een database: eerst opslaan (voor de back office), Formspree daarna als
+      // e-mailmelding. Lukt de database niet, dan blijft Formspree het vangnet.
+      if (DB_READY) {
+        sendToDb(order)
+          .then(function () {
+            sendToFormspree(order).catch(function () {});
+            finish(true);
+          })
+          .catch(function (err) {
+            if (err && err.code === "price_mismatch") {
+              finish(false, "price");
+              return;
+            }
+            sendToFormspree(order)
+              .then(function () { finish(true); })
+              .catch(function () { finish(false); });
+          });
+        return;
+      }
+
+      sendToFormspree(order)
+        .then(function () { finish(true); })
+        .catch(function () { finish(false); });
     });
   }
 
