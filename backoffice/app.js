@@ -88,6 +88,7 @@
     returns: [],
     creditNotes: [],
     changes: [],
+    priceChanges: [],
     settings: null,
     products: []
   };
@@ -199,7 +200,8 @@
       sb.from("products").select("*").order("sort_order", { ascending: true }),
       fetchAll("product_returns", "*", "created_at", false),
       fetchAll("credit_notes", "*", "credit_number", false),
-      fetchAll("order_changes", "*", "changed_at", false)
+      fetchAll("order_changes", "*", "changed_at", false),
+      fetchAll("price_changes", "*", "changed_at", false)
     ]).then(function (results) {
       var failed = results.filter(function (r) { return r.error; })[0];
       if (failed) {
@@ -213,6 +215,7 @@
       state.returns = results[4].data || [];
       state.creditNotes = results[5].data || [];
       state.changes = results[6].data || [];
+      state.priceChanges = results[7].data || [];
       renderAll();
     }).catch(function () {
       showLoadError("De gegevens konden niet worden geladen. Controleer je internetverbinding en vernieuw.");
@@ -1287,11 +1290,45 @@
     var tbody = $("#products-table tbody");
     tbody.textContent = "";
     state.products.forEach(function (p) {
+      var input = h("input", { type: "text", inputmode: "decimal", autocomplete: "off", class: "price-input", value: Number(p.price_incl).toFixed(2).replace(".", ","), "aria-label": "Prijs " + p.name });
+      var save = h("button", { type: "button", class: "btn btn-small", text: "Opslaan" });
+      save.addEventListener("click", function () { savePrice(p, input, save); });
       tbody.appendChild(h("tr", {}, [
         h("td", { text: "Druif & Draad " + p.name }),
-        h("td", { class: "num", text: money(p.price_incl) }),
-        h("td", { text: p.active ? "Ja" : "Nee" })
+        h("td", { class: "num" }, [input]),
+        h("td", {}, [save])
       ]));
     });
+
+    var log = $("#price-log");
+    log.textContent = "";
+    state.priceChanges.slice(0, 15).forEach(function (c) {
+      var product = state.products.filter(function (p) { return p.slug === c.product_slug; })[0];
+      log.appendChild(h("li", {}, [
+        (product ? product.name : c.product_slug) + ": " + money(c.old_price) + " → " + money(c.new_price),
+        h("span", { class: "meta", text: dateTime(c.changed_at) + (c.changed_by_email ? " · " + c.changed_by_email : "") })
+      ]));
+    });
+    $("#price-log-empty").hidden = state.priceChanges.length > 0;
   }
+
+  function savePrice(product, input, button) {
+    var value = parseFloat(String(input.value).replace(",", "."));
+    if (!(value > 0 && value < 1000)) { toast("Vul een prijs in tussen € 0,01 en € 999,99.", true); return; }
+    value = Math.round(value * 100) / 100;
+    if (value === Number(product.price_incl)) { toast("De prijs is niet gewijzigd.", true); return; }
+    if (!window.confirm("Prijs van Druif & Draad " + product.name + " wijzigen van " + money(product.price_incl) + " naar " + money(value) + "?\n\nDe website toont de nieuwe prijs direct. Bestaande bestellingen en facturen veranderen niet.")) return;
+    button.disabled = true;
+    sb.from("products").update({ price_incl: value }).eq("slug", product.slug).select().then(function (res) {
+      button.disabled = false;
+      if (res.error || !res.data || !res.data.length) { toast("De prijs kon niet worden opgeslagen.", true); return; }
+      product.price_incl = res.data[0].price_incl;
+      fetchAll("price_changes", "*", "changed_at", false).then(function (r) {
+        if (!r.error) state.priceChanges = r.data || [];
+        renderProducts();
+      });
+      toast("Prijs opgeslagen. De website gebruikt hem direct.");
+    });
+  }
+
 })();

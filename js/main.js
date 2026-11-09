@@ -504,6 +504,49 @@
     return "€" + n.toFixed(2).replace(".", ",");
   }
 
+  /* ============================================================
+     Prijzen uit de database (aan te passen in de back office)
+     ============================================================ */
+  function setPriceText(el, text) {
+    var first = el.firstChild;
+    if (first && first.nodeType === 3) first.nodeValue = text + " ";
+    else el.insertBefore(document.createTextNode(text + " "), first);
+  }
+
+  // Haalt de actuele prijzen op en zet ze in de pagina. Lukt dat niet, dan blijven de
+  // prijzen staan zoals ze in de pagina staan (en weigert de database een afwijkend bedrag).
+  function syncPrices() {
+    var cfg = window.DD_CONFIG || {};
+    if (!cfg.supabaseUrl || !cfg.supabaseKey || !window.fetch) return;
+    var headers = { apikey: cfg.supabaseKey };
+    if (cfg.supabaseKey.indexOf("eyJ") === 0) headers.Authorization = "Bearer " + cfg.supabaseKey;
+    fetch(cfg.supabaseUrl.replace(/\/+$/, "") + "/rest/v1/products?select=slug,price_incl&active=eq.true", {
+      headers: headers,
+      cache: "no-cache"
+    })
+      .then(function (response) {
+        if (!response.ok) throw new Error("prices");
+        return response.json();
+      })
+      .then(function (rows) {
+        var changed = false;
+        rows.forEach(function (row) {
+          var price = Number(row.price_incl);
+          if (!isFinite(price) || price <= 0 || price >= 1000) return;
+          Array.prototype.forEach.call(document.querySelectorAll("[data-price-for]"), function (el) {
+            if (el.getAttribute("data-price-for") !== row.slug) return;
+            setPriceText(el, formatEuro(price));
+            changed = true;
+          });
+          Array.prototype.forEach.call(document.querySelectorAll(".order-line[data-wine]"), function (line) {
+            if (line.getAttribute("data-wine") === row.slug) line.setAttribute("data-price", String(price));
+          });
+        });
+        if (changed) document.dispatchEvent(new CustomEvent("dd:prices"));
+      })
+      .catch(function () { /* blijft bij de prijzen in de pagina */ });
+  }
+
   function initOrderForm() {
     var form = document.getElementById("order-form");
     if (!form) return;
@@ -567,6 +610,7 @@
     });
 
     document.addEventListener("dd:lang", updateTotals);
+    document.addEventListener("dd:prices", updateTotals);
 
     function lineFor(wine) {
       return form.querySelector('.order-line[data-wine="' + wine + '"]');
@@ -797,6 +841,7 @@
     initNav();
     initReveal();
     initOrderForm();
+    syncPrices();
 
     var yearEl = document.getElementById("year");
     if (yearEl) yearEl.textContent = new Date().getFullYear();

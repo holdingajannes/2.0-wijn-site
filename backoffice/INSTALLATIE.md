@@ -17,6 +17,9 @@ Plak daarna ook de inhoud van `backoffice/migratie-02-retouren.sql` in een nieuw
 ### 2c. Aanpassen, logboek en creditnota’s
 Plak daarna ook de inhoud van `backoffice/migratie-03-aanpassen-creditnota.sql` in een nieuwe query en klik op **Run** (ná migratie 02). Zonder deze stap kun je geen bestellingen aanpassen en geen creditnota’s maken, en toont de back office een foutmelding bij het laden.
 
+### 2d. Prijslogboek
+Plak daarna ook de inhoud van `backoffice/migratie-04-prijslogboek.sql` in een nieuwe query en klik op **Run** (ná migratie 03). Zonder deze stap geeft de back office een foutmelding bij het laden.
+
 ## 3. Inlog voor 2 tot 3 personen
 1. **Authentication → Sign In / Providers → Email**: zet **Allow new users to sign up** uit (zo kan niemand zichzelf aanmelden).
 2. **Authentication → Users → Add user → Create new user**: vul e-mailadres en een sterk wachtwoord in en vink *Auto Confirm User* aan. Herhaal voor elke persoon.
@@ -42,6 +45,6 @@ De back office staat daarna op `https://druifendraad.nl/backoffice/` (en `https:
 ## Hoe het werkt
 - De website slaat een bestelling op via de database-functie `submit_order`. De prijs wordt in de database berekend. Formspree blijft als e-mailmelding en als vangnet werken.
 - Facturen worden als PDF in de browser gemaakt en door jullie zelf verstuurd.
-- Een prijswijziging moet je op de website **en** in de tabel `products` doorvoeren.
+- Prijzen pas je aan in de back office onder Instellingen. De website haalt ze uit de database en toont ze direct. Elke wijziging komt in het prijslogboek. Bestaande bestellingen en facturen behouden hun oorspronkelijke prijs. Valt de database uit, dan toont de website de prijzen die in de pagina staan.
 - Een bestelling kan worden aangepast zolang er nog geen factuur en geen retour is. Elke aanpassing en statuswijziging komt in het logboek, en de bestelling krijgt het label *Aangepast*. Na de factuur corrigeer je met een retour en een creditnota.
 - Een wachtwoord vergeten? Stel het opnieuw in via Supabase → Authentication → Users.

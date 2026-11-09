@@ -275,3 +275,6 @@ dialog::backdrop { background: rgba(20, 16, 10, 0.45); }
 .edit-total { display: flex; justify-content: space-between; font-weight: 600; padding: 0.6rem 0; border-top: 1px solid var(--border); margin-top: 0.4rem; }
 .edit-box label.reason { margin: 0.5rem 0 0.75rem; }
 .returns-list .ret-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
+
+.data input.price-input { width: 7rem; text-align: right; min-height: 36px; padding: 0.3em 0.6em; }
+.price-log-title { margin-top: 1.5rem; }

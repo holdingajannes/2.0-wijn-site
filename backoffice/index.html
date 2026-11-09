@@ -172,14 +172,17 @@
           </div>
         </form>
 
-        <h2>Prijzen (alleen lezen)</h2>
-        <p class="hint">Prijzen inclusief btw zoals de database ze rekent. Een prijswijziging moet ook op de website worden doorgevoerd; anders weigert de database bestellingen met het oude bedrag.</p>
+        <h2>Prijzen</h2>
+        <p class="hint">Prijzen inclusief btw. Een nieuwe prijs staat direct op de website. Bestaande bestellingen en facturen behouden hun oorspronkelijke prijs.</p>
         <div class="table-wrap">
           <table class="data" id="products-table">
-            <thead><tr><th>Wijn</th><th class="num">Prijs incl. btw</th><th>Actief</th></tr></thead>
+            <thead><tr><th>Wijn</th><th class="num">Prijs incl. btw (€)</th><th></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
+        <h3 class="price-log-title">Prijswijzigingen</h3>
+        <ul class="history" id="price-log"></ul>
+        <p class="empty" id="price-log-empty" hidden>Er zijn nog geen prijswijzigingen.</p>
       </section>
     </main>
   </div>
