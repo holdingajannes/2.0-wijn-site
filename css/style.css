@@ -280,6 +280,9 @@ textarea:focus-visible {
   display: none;
   background: transparent;
   border: none;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
@@ -298,8 +301,8 @@ textarea:focus-visible {
   transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
 }
 .nav-toggle span { top: 21px; }
-.nav-toggle span::before { content: ""; top: -7px; }
-.nav-toggle span::after { content: ""; top: 7px; }
+.nav-toggle span::before { content: ""; top: -7px; left: 0; right: 0; }
+.nav-toggle span::after { content: ""; top: 7px; left: 0; right: 0; }
 .nav-toggle[aria-expanded="true"] span { background: transparent; }
 .nav-toggle[aria-expanded="true"] span::before { transform: translateY(7px) rotate(45deg); }
 .nav-toggle[aria-expanded="true"] span::after { transform: translateY(-7px) rotate(-45deg); }
@@ -369,6 +372,16 @@ textarea:focus-visible {
     box-shadow: var(--shadow-md);
   }
   .site-nav.is-open { transform: translateX(0); }
+  .nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 899;
+    background: rgba(27, 22, 16, 0.32);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--dur-base) var(--ease-out), visibility var(--dur-base) var(--ease-out);
+  }
+  .nav-backdrop.is-open { opacity: 1; visibility: visible; }
   .nav-links { flex-direction: column; gap: var(--space-2); }
   .nav-links a { font-size: 1.1rem; }
   .lang-switch { margin-top: var(--space-3); }

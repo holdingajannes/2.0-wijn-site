@@ -74,7 +74,7 @@
           </div>
         </div>
         <div class="hero__visual reveal">
-          <img src="assets/img/wines-group.jpg" width="1400" height="990" alt="Druif &amp; Draad Blanc, Rouge en Rosé naast elkaar" loading="eager" decoding="async">
+          <img src="assets/img/wines-group.jpg" width="1400" height="990" alt="Druif &amp; Draad Blanc, Rouge, Rosé en Mousseux naast elkaar" loading="eager" decoding="async">
           <span class="hero__badge" data-i18n="hero.badge">Blanc · Rouge · Rosé · Mousseux</span>
         </div>
       </div>
@@ -197,7 +197,7 @@
               <p class="wine-card__desc" data-i18n="wine.mousseux.desc">Een frisse, fruitige mousseux zonder restsuiker, een zogeheten Brut de Brut. Een feestelijke wijn om samen te delen.</p>
               <a class="wine-card__more" href="wijn-mousseux.html" data-i18n="wine.moreCta">Meer over deze wijn <span aria-hidden="true">&rarr;</span></a>
               <div class="wine-card__footer">
-                <div class="wine-card__price">&euro;11,95 <span data-i18n="wine.priceNote">incl. btw</span></div>
+                <div class="wine-card__price">&euro;13,95 <span data-i18n="wine.priceNote">incl. btw</span></div>
                 <button type="button" class="btn btn-ghost btn-order-wine" data-wine="mousseux" data-i18n="wine.orderCta">Bestellen</button>
               </div>
             </div>
@@ -224,6 +224,9 @@
           </div>
 
           <form class="order-form reveal" id="order-form" novalidate>
+            <p class="visually-hidden" aria-hidden="true">
+              <label>Niet invullen <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+            </p>
             <fieldset class="order-fieldset">
               <legend data-i18n="order.yourOrder">Jouw bestelling</legend>
               <div class="order-lines">
@@ -266,10 +269,10 @@
                   <span class="order-line__sub">&ndash;</span>
                 </div>
 
-                <div class="order-line" data-wine="mousseux" data-name="Mousseux" data-price="11.95">
+                <div class="order-line" data-wine="mousseux" data-name="Mousseux" data-price="13.95">
                   <div class="order-line__info">
                     <span class="order-line__name">Druif &amp; Draad <em>Mousseux</em></span>
-                    <span class="order-line__price">&euro;11,95 <span data-i18n="wine.priceNote">incl. btw</span></span>
+                    <span class="order-line__price">&euro;13,95 <span data-i18n="wine.priceNote">incl. btw</span></span>
                   </div>
                   <div class="stepper">
                     <button type="button" class="stepper__btn" data-step="-1" data-i18n-aria="order.less" aria-label="Minder">&minus;</button>

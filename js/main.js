@@ -419,18 +419,32 @@
     var nav = document.getElementById("site-nav");
     if (!toggle || !nav) return;
 
-    toggle.addEventListener("click", function () {
-      var open = nav.classList.toggle("is-open");
+    var backdrop = document.createElement("div");
+    backdrop.className = "nav-backdrop";
+    document.body.appendChild(backdrop);
+
+    function setOpen(open) {
+      nav.classList.toggle("is-open", open);
+      backdrop.classList.toggle("is-open", open);
       toggle.setAttribute("aria-expanded", String(open));
       document.body.style.overflow = open ? "hidden" : "";
+    }
+
+    toggle.addEventListener("click", function () {
+      setOpen(!nav.classList.contains("is-open"));
+    });
+
+    backdrop.addEventListener("click", function () { setOpen(false); });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && nav.classList.contains("is-open")) {
+        setOpen(false);
+        toggle.focus();
+      }
     });
 
     nav.querySelectorAll("a").forEach(function (link) {
-      link.addEventListener("click", function () {
-        nav.classList.remove("is-open");
-        toggle.setAttribute("aria-expanded", "false");
-        document.body.style.overflow = "";
-      });
+      link.addEventListener("click", function () { setOpen(false); });
     });
 
     var header = document.getElementById("site-header");
@@ -492,10 +506,9 @@
     var form = document.getElementById("order-form");
     if (!form) return;
 
-    // Zet hier het formulier-adres van Formspree (https://formspree.io), bijvoorbeeld
-    // "https://formspree.io/f/abcdwxyz". Zolang dit nog "YOUR_FORM_ID" bevat, opent het
-    // formulier in plaats daarvan het e-mailprogramma van de klant met de bestelling.
-    var FORM_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+    // Formulier-adres van Formspree (https://formspree.io). Bevat dit nog "YOUR_FORM_ID",
+    // dan opent het formulier in plaats daarvan het e-mailprogramma van de klant met de bestelling.
+    var FORM_ENDPOINT = "https://formspree.io/f/mbggvgbg";
     var ORDER_EMAIL = "info@druifendraad.nl";
 
     var lines = Array.prototype.slice.call(form.querySelectorAll(".order-line"));
