@@ -38,6 +38,7 @@
       <nav class="tabs" role="tablist" aria-label="Onderdelen">
         <button type="button" role="tab" data-tab="dashboard" aria-selected="true">Dashboard</button>
         <button type="button" role="tab" data-tab="orders" aria-selected="false">Bestellingen <span class="count" id="count-orders" hidden></span></button>
+        <button type="button" role="tab" data-tab="stock" aria-selected="false">Voorraad</button>
         <button type="button" role="tab" data-tab="invoices" aria-selected="false">Facturen</button>
         <button type="button" role="tab" data-tab="settings" aria-selected="false">Instellingen</button>
       </nav>
@@ -121,6 +122,30 @@
           </table>
         </div>
         <p class="empty" id="orders-empty" hidden>Geen bestellingen gevonden.</p>
+      </section>
+
+      <!-- Voorraad -->
+      <section id="tab-stock" hidden>
+        <div class="toolbar">
+          <button type="button" class="btn btn-primary btn-small" id="stock-add">Voorraad bijboeken</button>
+          <button type="button" class="btn btn-small" id="stock-sample">Sample of breuk afboeken</button>
+          <button type="button" class="btn btn-small" id="stock-count">Voorraad tellen</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data" id="stock-table">
+            <thead><tr><th>Wijn</th><th class="num">Op voorraad (flessen)</th><th class="num">Flessen per pallet</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="hint footnote">Een bestelling (website of handmatig) gaat automatisch van de voorraad af, een annulering komt er weer bij. Staat de voorraad onder nul, dan is er meer besteld dan er is; de bestelling wordt dan niet geweigerd.</p>
+        <h2>Voorraadmutaties</h2>
+        <div class="table-wrap">
+          <table class="data" id="stock-log-table">
+            <thead><tr><th>Datum</th><th>Wijn</th><th class="num">Mutatie</th><th>Soort</th><th>Toelichting</th><th>Door</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="empty" id="stock-log-empty" hidden>Er zijn nog geen voorraadmutaties. Begin met <strong>Voorraad tellen</strong> om de huidige voorraad in te vullen.</p>
       </section>
 
       <!-- Facturen -->

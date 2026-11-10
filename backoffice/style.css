@@ -281,3 +281,16 @@ dialog::backdrop { background: rgba(20, 16, 10, 0.45); }
 
 .data input.price-input { width: 7rem; text-align: right; min-height: 36px; padding: 0.3em 0.6em; }
 .price-log-title { margin-top: 1.5rem; }
+
+/* ---------- Voorraad ---------- */
+.stock-negative { color: var(--danger); font-weight: 600; }
+.stock-in { color: var(--ok); }
+.stock-out { color: var(--danger); }
+.stock-row { display: grid; grid-template-columns: 1fr 5.5rem 6rem 5rem; gap: 0.6rem; align-items: center; padding: 0.3rem 0; }
+.stock-row.simple { grid-template-columns: 1fr 6rem 6rem; }
+.stock-row input { min-height: 36px; padding: 0.3em 0.5em; text-align: right; }
+.stock-row .num { text-align: right; font-variant-numeric: tabular-nums; }
+.stock-row.head { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+.stock-row.head span:not(:first-child) { text-align: right; }
+.stock-form label.stock-kind { display: block; margin-bottom: 0.9rem; }
+.data input.pallet-input { width: 6rem; text-align: right; min-height: 36px; padding: 0.3em 0.6em; }

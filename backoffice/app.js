@@ -94,6 +94,8 @@
     creditNotes: [],
     changes: [],
     priceChanges: [],
+    stock: [],
+    stockMovements: [],
     settings: null,
     products: []
   };
@@ -206,7 +208,9 @@
       fetchAll("product_returns", "*", "created_at", false),
       fetchAll("credit_notes", "*", "credit_number", false),
       fetchAll("order_changes", "*", "changed_at", false),
-      fetchAll("price_changes", "*", "changed_at", false)
+      fetchAll("price_changes", "*", "changed_at", false),
+      sb.from("stock_levels").select("*"),
+      sb.from("stock_movements").select("*").order("id", { ascending: false }).limit(300)
     ]).then(function (results) {
       var failed = results.filter(function (r) { return r.error; })[0];
       if (failed) {
@@ -221,6 +225,8 @@
       state.creditNotes = results[5].data || [];
       state.changes = results[6].data || [];
       state.priceChanges = results[7].data || [];
+      state.stock = results[8].data || [];
+      state.stockMovements = results[9].data || [];
       renderAll();
     }).catch(function () {
       showLoadError("De gegevens konden niet worden geladen. Controleer je internetverbinding en vernieuw.");
@@ -239,7 +245,7 @@
     $$(".tabs [data-tab]").forEach(function (btn) {
       btn.setAttribute("aria-selected", String(btn.getAttribute("data-tab") === name));
     });
-    ["dashboard", "orders", "invoices", "settings"].forEach(function (t) { $("#tab-" + t).hidden = t !== name; });
+    ["dashboard", "orders", "stock", "invoices", "settings"].forEach(function (t) { $("#tab-" + t).hidden = t !== name; });
   }
   $$(".tabs [data-tab]").forEach(function (btn) {
     btn.addEventListener("click", function () { showTab(btn.getAttribute("data-tab")); });
@@ -253,6 +259,7 @@
     renderDashboard();
     renderOrders();
     renderInvoices();
+    renderStock();
     renderSettings();
     renderProducts();
   }
@@ -524,7 +531,7 @@
     rows.forEach(function (r) {
       r.qty.addEventListener("input", recompute);
       r.priceInput.addEventListener("input", recompute);
-      itemsBox.appendChild(h("div", { class: "edit-row" }, [h("span", { text: "Druif & Draad " + r.name }), r.priceInput, r.qty]));
+      itemsBox.appendChild(h("div", { class: "edit-row" }, [h("span", { text: "Druif & Draad " + r.name + " (voorraad " + stockOf(r.slug) + ")" }), r.priceInput, r.qty]));
     });
     itemsBox.appendChild(h("div", { class: "edit-total" }, [h("span", { text: "Totaal incl. btw" }), totalEl]));
 
@@ -975,7 +982,9 @@
     todo.textContent = "";
     if (fresh) todo.appendChild(h("button", { type: "button", onclick: function () { goToOrders("nieuw"); } }, [h("strong", { text: String(fresh) }), fresh === 1 ? "nieuwe bestelling" : "nieuwe bestellingen"]));
     if (toInvoice) todo.appendChild(h("button", { type: "button", onclick: function () { goToOrders("open"); } }, [h("strong", { text: String(toInvoice) }), toInvoice === 1 ? "bestelling zonder factuur" : "bestellingen zonder factuur"]));
-    if (!fresh && !toInvoice) todo.appendChild(h("p", { class: "todo-ok", text: "Niets dat actie vraagt." }));
+    var negative = state.stock.filter(function (s) { return s.quantity < 0; }).length;
+    if (negative) todo.appendChild(h("button", { type: "button", onclick: function () { showTab("stock"); } }, [h("strong", { text: String(negative) }), negative === 1 ? "wijn met voorraad onder nul" : "wijnen met voorraad onder nul"]));
+    if (!fresh && !toInvoice && !negative) todo.appendChild(h("p", { class: "todo-ok", text: "Niets dat actie vraagt." }));
 
     // Verkocht per wijn
     var perWine = {};
@@ -1486,5 +1495,223 @@
       toast("Prijs opgeslagen. De website gebruikt hem direct.");
     });
   }
+
+  /* ============================================================
+     Voorraad
+     ============================================================ */
+
+  var STOCK_KIND_LABEL = {
+    pallet: "Binnenkomst in pallets",
+    losse_flessen: "Binnenkomst losse flessen",
+    sample: "Sample weggegeven",
+    breuk: "Breuk of verlies",
+    retour: "Retour terug op voorraad",
+    telling: "Telling (stelt de voorraad in)",
+    bestelling: "Bestelling",
+    aanpassing: "Bestelling aangepast",
+    annulering: "Bestelling geannuleerd"
+  };
+  var STOCK_FORM_KINDS = ["pallet", "losse_flessen", "sample", "breuk", "retour", "telling"];
+  var STOCK_ERRORS = {
+    invalid_pallets: "Vul het aantal pallets en het aantal flessen per pallet in (hele getallen).",
+    invalid_quantity: "Vul een heel aantal flessen in.",
+    unknown_product: "Deze wijn is niet bekend.",
+    duplicate_product: "Een wijn staat dubbel in de lijst.",
+    no_items: "Vul bij minstens één wijn een aantal in.",
+    no_change: "Er is niets gewijzigd: de getelde aantallen zijn gelijk aan de voorraad.",
+    invalid_note: "De toelichting is te lang.",
+    not_allowed: "Je hebt geen toegang om de voorraad te wijzigen."
+  };
+
+  function stockRecord(slug) {
+    return state.stock.filter(function (s) { return s.product_slug === slug; })[0] || null;
+  }
+  function stockOf(slug) {
+    var r = stockRecord(slug);
+    return r ? r.quantity : 0;
+  }
+  function productName(slug) {
+    var p = state.products.filter(function (x) { return x.slug === slug; })[0];
+    return p ? p.name : slug;
+  }
+
+  function renderStock() {
+    var tbody = $("#stock-table tbody");
+    tbody.textContent = "";
+    state.products.forEach(function (p) {
+      var qty = stockOf(p.slug);
+      var rec = stockRecord(p.slug);
+      var per = h("input", {
+        type: "text", inputmode: "numeric", autocomplete: "off", class: "pallet-input", placeholder: "–",
+        value: rec && rec.bottles_per_pallet ? String(rec.bottles_per_pallet) : "", "aria-label": "Flessen per pallet " + p.name
+      });
+      var save = h("button", { type: "button", class: "btn btn-small", text: "Opslaan" });
+      save.addEventListener("click", function () { savePerPallet(p, per, save); });
+      tbody.appendChild(h("tr", {}, [
+        h("td", { text: "Druif & Draad " + p.name }),
+        h("td", { class: "num" + (qty < 0 ? " stock-negative" : ""), text: String(qty) }),
+        h("td", { class: "num" }, [per]),
+        h("td", {}, [save])
+      ]));
+    });
+
+    var log = $("#stock-log-table tbody");
+    log.textContent = "";
+    state.stockMovements.forEach(function (m) {
+      log.appendChild(h("tr", {}, [
+        h("td", { text: dateTime(m.created_at) }),
+        h("td", { text: productName(m.product_slug) }),
+        h("td", { class: "num " + (m.delta > 0 ? "stock-in" : "stock-out"), text: (m.delta > 0 ? "+" : "−") + Math.abs(m.delta) }),
+        h("td", { text: (STOCK_KIND_LABEL[m.kind] || m.kind) + (m.kind === "pallet" && m.pallets ? " (" + m.pallets + " × " + m.per_pallet + ")" : "") }),
+        h("td", { text: m.note || "" }),
+        h("td", { text: m.created_by_email || "website" })
+      ]));
+    });
+    $("#stock-log-empty").hidden = state.stockMovements.length > 0;
+    $("#stock-log-table").hidden = state.stockMovements.length === 0;
+  }
+
+  function savePerPallet(product, input, button) {
+    var raw = String(input.value).trim();
+    var value = raw === "" ? null : Number(raw);
+    if (value !== null && !(Number.isInteger(value) && value >= 1 && value <= 5000)) {
+      toast("Vul een heel aantal flessen per pallet in (1 tot 5000).", true);
+      return;
+    }
+    button.disabled = true;
+    sb.from("stock_levels").update({ bottles_per_pallet: value }).eq("product_slug", product.slug).select().then(function (res) {
+      button.disabled = false;
+      if (res.error || !res.data || !res.data.length) { toast("Opslaan is niet gelukt.", true); return; }
+      var rec = stockRecord(product.slug);
+      if (rec) rec.bottles_per_pallet = value;
+      toast("Opgeslagen");
+    });
+  }
+
+  function openStock(kind) {
+    openOrderId = null;
+    editingOrder = false;
+    renderStockForm(kind);
+    if (!dialog.open) dialog.showModal();
+  }
+
+  function renderStockForm(kind) {
+    dialog.textContent = "";
+    dialog.setAttribute("aria-labelledby", "dialog-title");
+
+    var kindSelect = h("select", { id: "stock-kind" }, STOCK_FORM_KINDS.map(function (k) {
+      return h("option", { value: k, text: STOCK_KIND_LABEL[k], selected: k === kind });
+    }));
+    kindSelect.addEventListener("change", function () { renderStockForm(kindSelect.value); });
+
+    var isPallet = kind === "pallet";
+    var isCount = kind === "telling";
+    var rows = state.products.filter(function (p) { return p.active; }).map(function (p) {
+      var rec = stockRecord(p.slug);
+      return {
+        slug: p.slug, name: p.name,
+        pallets: isPallet ? h("input", { type: "number", min: "0", max: "999", step: "1", "aria-label": "Aantal pallets " + p.name }) : null,
+        perPallet: isPallet ? h("input", { type: "number", min: "1", max: "5000", step: "1", value: rec && rec.bottles_per_pallet ? String(rec.bottles_per_pallet) : "", "aria-label": "Flessen per pallet " + p.name }) : null,
+        qty: isPallet ? null : h("input", { type: "number", min: "0", max: "1000000", step: "1", "aria-label": (isCount ? "Getelde voorraad " : "Aantal flessen ") + p.name })
+      };
+    });
+
+    var box = h("div", { class: "edit-box" });
+    if (isPallet) {
+      box.appendChild(h("div", { class: "stock-row head" }, [h("span", { text: "Wijn" }), h("span", { text: "Pallets" }), h("span", { text: "Flessen per pallet" }), h("span", { text: "Totaal" })]));
+    } else {
+      box.appendChild(h("div", { class: "stock-row simple head" }, [h("span", { text: "Wijn" }), h("span", { text: "Nu op voorraad" }), h("span", { text: isCount ? "Geteld" : "Aantal flessen" })]));
+    }
+    rows.forEach(function (r) {
+      if (isPallet) {
+        var totalEl = h("span", { class: "num", text: "0" });
+        function recompute() {
+          var a = parseInt(r.pallets.value, 10), b = parseInt(r.perPallet.value, 10);
+          totalEl.textContent = String(a > 0 && b > 0 ? a * b : 0);
+        }
+        r.pallets.addEventListener("input", recompute);
+        r.perPallet.addEventListener("input", recompute);
+        box.appendChild(h("div", { class: "stock-row" }, [h("span", { text: "Druif & Draad " + r.name }), r.pallets, r.perPallet, totalEl]));
+      } else {
+        box.appendChild(h("div", { class: "stock-row simple" }, [
+          h("span", { text: "Druif & Draad " + r.name }),
+          h("span", { class: "num" + (stockOf(r.slug) < 0 ? " stock-negative" : ""), text: String(stockOf(r.slug)) }),
+          r.qty
+        ]));
+      }
+    });
+
+    var hints = {
+      pallet: "Vul alleen de wijnen in die zijn binnengekomen. Het aantal flessen per pallet wordt onthouden voor de volgende keer.",
+      losse_flessen: "Vul alleen de wijnen in die zijn binnengekomen.",
+      sample: "Flessen die je weggeeft als proefmonster. Vul alleen de wijnen in die je hebt weggegeven.",
+      breuk: "Kapotte of verloren flessen. Vul alleen de wijnen in waar dit voor geldt.",
+      retour: "Alleen voor geretourneerde flessen die je nog kunt verkopen. Een retour boekt de voorraad niet vanzelf terug.",
+      telling: "Vul het werkelijke aantal flessen in dat je geteld hebt. De voorraad wordt daarop gezet, ook bij 0. Wijnen die je leeg laat blijven ongewijzigd. Hiermee zet je ook de beginstand."
+    };
+    var note = h("input", { type: "text", id: "stock-note", maxlength: "500", placeholder: kind === "sample" ? "bijv. proeverij bij Restaurant X" : "optioneel" });
+    var save = h("button", { type: "submit", class: "btn btn-primary", id: "stock-save", text: "Opslaan" });
+    var form = h("form", { class: "stock-form", novalidate: true }, [
+      h("label", { class: "stock-kind" }, ["Soort mutatie", kindSelect]),
+      h("p", { class: "hint", text: hints[kind] }),
+      box,
+      h("label", { class: "reason" }, ["Toelichting (komt in het logboek)", note]),
+      h("div", { class: "row" }, [save, h("button", { type: "button", class: "btn", text: "Annuleren", onclick: closeDialog })])
+    ]);
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var lines = [];
+      var summary = [];
+      var overdraw = [];
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        if (isPallet) {
+          if (r.pallets.value.trim() === "" && r.perPallet.value.trim() === "") continue;
+          var a = Number(r.pallets.value), b = Number(r.perPallet.value);
+          if (a === 0 && r.pallets.value.trim() !== "") continue;
+          if (!(Number.isInteger(a) && a >= 1 && a <= 999 && Number.isInteger(b) && b >= 1 && b <= 5000)) { toast(STOCK_ERRORS.invalid_pallets, true); return; }
+          lines.push({ slug: r.slug, pallets: a, per_pallet: b });
+          summary.push("+" + a * b + " " + r.name + " (" + a + " × " + b + ")");
+        } else {
+          if (r.qty.value.trim() === "") continue;
+          var q = Number(r.qty.value);
+          if (!(Number.isInteger(q) && q >= 0 && q <= 1000000)) { toast(STOCK_ERRORS.invalid_quantity, true); return; }
+          if (!isCount && q === 0) continue;
+          lines.push({ slug: r.slug, quantity: q });
+          if (isCount) summary.push(r.name + ": " + stockOf(r.slug) + " → " + q);
+          else {
+            summary.push((kind === "sample" || kind === "breuk" ? "−" : "+") + q + " " + r.name);
+            if ((kind === "sample" || kind === "breuk") && q > stockOf(r.slug)) overdraw.push(r.name);
+          }
+        }
+      }
+      if (!lines.length) { toast(STOCK_ERRORS.no_items, true); return; }
+      var question = STOCK_KIND_LABEL[kind] + " vastleggen?\n\n" + summary.join("\n");
+      if (overdraw.length) question += "\n\nLet op: er staat minder op voorraad dan je afboekt (" + overdraw.join(", ") + "). De voorraad komt dan onder nul.";
+      if (!window.confirm(question)) return;
+
+      save.disabled = true;
+      sb.rpc("add_stock_movements", { p_kind: kind, p_lines: lines, p_note: note.value.trim() || null }).then(function (res) {
+        if (res.error) {
+          save.disabled = false;
+          toast(STOCK_ERRORS[res.error.message] || "Opslaan is niet gelukt. Probeer het opnieuw.", true);
+          return;
+        }
+        closeDialog();
+        loadAll().then(function () { toast("Voorraad bijgewerkt"); });
+      });
+    });
+
+    dialog.appendChild(h("div", { class: "dialog-head" }, [
+      h("div", {}, [h("h1", { id: "dialog-title", text: "Voorraad bijwerken" })]),
+      h("button", { type: "button", class: "btn btn-small", text: "Sluiten", onclick: closeDialog })
+    ]));
+    dialog.appendChild(form);
+  }
+
+  $("#stock-add").addEventListener("click", function () { openStock("pallet"); });
+  $("#stock-sample").addEventListener("click", function () { openStock("sample"); });
+  $("#stock-count").addEventListener("click", function () { openStock("telling"); });
 
 })();
