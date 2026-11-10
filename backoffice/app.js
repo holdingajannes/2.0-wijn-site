@@ -69,6 +69,11 @@
   function addressLine(o) {
     return o.street + " " + o.house_number + (o.addition ? " " + o.addition : "");
   }
+  // Handmatige bestellingen hebben niet altijd een e-mailadres: dan herkennen we de klant aan naam en postcode.
+  function customerKey(o) {
+    var email = String(o.email || "").trim().toLowerCase();
+    return email || (String(o.name).trim() + "|" + o.postcode).toLowerCase();
+  }
 
   /* ============================================================
      Verbinding
@@ -287,7 +292,11 @@
         h("td", { text: o.city }),
         h("td", { class: "num", text: String(bottlesOf(o)) }),
         h("td", { class: "num", text: money(o.total_incl) }),
-        h("td", {}, [badge(o.status), o.edited_at ? h("span", { class: "badge badge-edited", text: "Aangepast" }) : null]),
+        h("td", {}, [
+          badge(o.status),
+          o.source === "handmatig" ? h("span", { class: "badge badge-manual", text: "Handmatig" }) : null,
+          o.edited_at ? h("span", { class: "badge badge-edited", text: "Aangepast" }) : null
+        ]),
         h("td", { text: inv ? inv.invoice_number : "–" })
       ]);
       tbody.appendChild(tr);
@@ -386,7 +395,7 @@
     dialog.appendChild(h("div", { class: "dialog-head" }, [
       h("div", {}, [
         h("h1", { id: "dialog-title", text: "Bestelling #" + order.order_number }),
-        h("p", { text: "Ontvangen op " + dateTime(order.created_at) })
+        h("p", { text: (order.source === "handmatig" ? "Handmatig toegevoegd, besteld op " : "Ontvangen op ") + dateTime(order.created_at) })
       ]),
       h("button", { type: "button", class: "btn btn-small", text: "Sluiten", onclick: closeDialog })
     ]));
@@ -401,7 +410,7 @@
       h("div", {}, [
         h("h3", { text: "Klant" }),
         h("p", { text: order.name }),
-        h("p", {}, [h("a", { href: "mailto:" + order.email, text: order.email })]),
+        order.email ? h("p", {}, [h("a", { href: "mailto:" + order.email, text: order.email })]) : null,
         order.phone ? h("p", { text: order.phone }) : null
       ]),
       h("div", {}, [
@@ -436,6 +445,153 @@
     dialog.appendChild(returnsSection(order));
     dialog.appendChild(historySection(order));
   }
+
+  /* ============================================================
+     Bestelling handmatig toevoegen
+     ============================================================ */
+
+  var NEW_ORDER_ERRORS = {
+    invalid_input: "Controleer de gegevens van de klant: een veld is leeg of te lang.",
+    invalid_email: "Dit e-mailadres klopt niet. Laat het veld leeg als je het niet weet.",
+    invalid_postcode: "Vul een geldige postcode in, bijvoorbeeld 1234 AB.",
+    invalid_date: "De besteldatum mag niet in de toekomst liggen (en maximaal twee jaar terug).",
+    invalid_status: "Kies een geldige status.",
+    invalid_quantity: "Vul per wijn een heel aantal tussen 0 en 99 in.",
+    invalid_price: "Vul een prijs in tussen € 0,00 en € 999,99.",
+    no_items: "Een bestelling moet minstens één fles bevatten.",
+    unknown_product: "Deze wijn is niet (meer) beschikbaar.",
+    duplicate_product: "Een wijn staat dubbel in de bestelling.",
+    not_allowed: "Je hebt geen toegang om bestellingen toe te voegen."
+  };
+  var NEW_ORDER_STATUSES = ["nieuw", "bevestigd", "geleverd", "betaald"];
+
+  function openNewOrder() {
+    openOrderId = null;
+    editingOrder = false;
+    renderNewOrder();
+    if (!dialog.open) dialog.showModal();
+  }
+
+  function renderNewOrder() {
+    dialog.textContent = "";
+    dialog.setAttribute("aria-labelledby", "dialog-title");
+
+    function text(id, label, attrs) {
+      var input = h("input", Object.assign({ type: "text", id: id, autocomplete: "off" }, attrs || {}));
+      return { input: input, label: h("label", {}, [label, input]) };
+    }
+    var f = {
+      name: text("new-name", "Naam", { maxlength: "120" }),
+      email: text("new-email", "E-mailadres (optioneel)", { type: "email", maxlength: "200" }),
+      phone: text("new-phone", "Telefoon (optioneel)", { maxlength: "40" }),
+      street: text("new-street", "Straat", { maxlength: "120" }),
+      number: text("new-number", "Huisnummer", { maxlength: "20" }),
+      addition: text("new-addition", "Toevoeging (optioneel)", { maxlength: "20" }),
+      postcode: text("new-postcode", "Postcode", { maxlength: "7", placeholder: "1234 AB" }),
+      city: text("new-city", "Plaats", { maxlength: "80" }),
+      date: text("new-date", "Besteldatum", { type: "date", max: today(), required: true })
+    };
+    f.date.input.value = today();
+    var status = h("select", { id: "new-status" }, NEW_ORDER_STATUSES.map(function (s) {
+      return h("option", { value: s, text: STATUS_LABEL[s] });
+    }));
+    var note = h("textarea", { id: "new-note", rows: "2", maxlength: "1000", placeholder: "bijv. telefonisch besteld, betaalt contant bij levering" });
+
+    var rows = state.products.filter(function (p) { return p.active; }).map(function (p) {
+      return {
+        slug: p.slug, name: p.name, price: Number(p.price_incl),
+        qty: h("input", { type: "number", min: "0", max: "99", step: "1", value: "0", "aria-label": "Aantal " + p.name }),
+        priceInput: h("input", { type: "text", inputmode: "decimal", autocomplete: "off", value: Number(p.price_incl).toFixed(2).replace(".", ","), "aria-label": "Prijs per fles " + p.name })
+      };
+    });
+    var totalEl = h("span", { class: "num", text: money(0) });
+
+    function parsePrice(r) {
+      var v = parseFloat(String(r.priceInput.value).replace(",", "."));
+      return v >= 0 && v < 1000 ? Math.round(v * 100) / 100 : NaN;
+    }
+    function recompute() {
+      var total = rows.reduce(function (t, r) {
+        var q = parseInt(r.qty.value, 10), p = parsePrice(r);
+        return t + (q > 0 && !isNaN(p) ? q * p : 0);
+      }, 0);
+      totalEl.textContent = money(total);
+    }
+
+    var itemsBox = h("div", { class: "edit-box" }, [
+      h("div", { class: "edit-row edit-head" }, [h("span", { text: "Wijn" }), h("span", { text: "Prijs per fles" }), h("span", { text: "Aantal" })])
+    ]);
+    rows.forEach(function (r) {
+      r.qty.addEventListener("input", recompute);
+      r.priceInput.addEventListener("input", recompute);
+      itemsBox.appendChild(h("div", { class: "edit-row" }, [h("span", { text: "Druif & Draad " + r.name }), r.priceInput, r.qty]));
+    });
+    itemsBox.appendChild(h("div", { class: "edit-total" }, [h("span", { text: "Totaal incl. btw" }), totalEl]));
+
+    var save = h("button", { type: "submit", class: "btn btn-primary", id: "new-save", text: "Bestelling toevoegen" });
+    var form = h("form", { class: "return-form", novalidate: true }, [
+      f.name.label, f.email.label, f.phone.label, h("span"),
+      f.street.label, f.number.label, f.addition.label, f.postcode.label,
+      f.city.label,
+      f.date.label,
+      h("label", {}, ["Status", status]),
+      h("div", { class: "span-2" }, [h("h3", { text: "Wijnen" }), itemsBox]),
+      h("label", { class: "span-2" }, ["Interne notitie (optioneel, de klant ziet dit niet)", note]),
+      h("div", { class: "span-2 row" }, [
+        save,
+        h("button", { type: "button", class: "btn", text: "Annuleren", onclick: closeDialog })
+      ])
+    ]);
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      function v(field) { return field.input.value.trim(); }
+      if (!v(f.name) || !v(f.street) || !v(f.number) || !v(f.city)) { toast("Vul naam, straat, huisnummer en plaats in.", true); return; }
+      if (!/^[1-9][0-9]{3} ?[A-Za-z]{2}$/.test(v(f.postcode))) { toast(NEW_ORDER_ERRORS.invalid_postcode, true); return; }
+      if (v(f.email) && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v(f.email))) { toast(NEW_ORDER_ERRORS.invalid_email, true); return; }
+      if (!v(f.date) || v(f.date) > today()) { toast(NEW_ORDER_ERRORS.invalid_date, true); return; }
+
+      var items = [];
+      for (var i = 0; i < rows.length; i++) {
+        var q = rows[i].qty.value.trim() === "" ? 0 : Number(rows[i].qty.value);
+        if (!(q >= 0 && q <= 99 && Math.floor(q) === q)) { toast(NEW_ORDER_ERRORS.invalid_quantity, true); return; }
+        if (q === 0) continue;
+        var p = parsePrice(rows[i]);
+        if (isNaN(p)) { toast(NEW_ORDER_ERRORS.invalid_price, true); return; }
+        items.push({ slug: rows[i].slug, quantity: q, unit_price: p });
+      }
+      if (!items.length) { toast(NEW_ORDER_ERRORS.no_items, true); return; }
+
+      save.disabled = true;
+      sb.rpc("create_manual_order", { p_order: {
+        name: v(f.name), email: v(f.email), phone: v(f.phone), street: v(f.street), house_number: v(f.number),
+        addition: v(f.addition), postcode: v(f.postcode), city: v(f.city), status: status.value,
+        order_date: v(f.date), internal_note: note.value.trim(), items: items
+      } }).then(function (res) {
+        if (res.error || !res.data) {
+          save.disabled = false;
+          toast(NEW_ORDER_ERRORS[res.error && res.error.message] || "De bestelling kon niet worden opgeslagen. Probeer het opnieuw.", true);
+          return;
+        }
+        var created = res.data;
+        loadAll().then(function () {
+          toast("Bestelling #" + created.order_number + " toegevoegd");
+          openOrder(created.id);
+        });
+      });
+    });
+
+    dialog.appendChild(h("div", { class: "dialog-head" }, [
+      h("div", {}, [
+        h("h1", { id: "dialog-title", text: "Bestelling toevoegen" }),
+        h("p", { text: "Voor bestellingen die niet via de website binnenkomen." })
+      ]),
+      h("button", { type: "button", class: "btn btn-small", text: "Sluiten", onclick: closeDialog })
+    ]));
+    dialog.appendChild(form);
+  }
+
+  $("#new-order").addEventListener("click", openNewOrder);
 
   /* ============================================================
      Bestelling aanpassen en logboek
@@ -781,11 +937,11 @@
     var byCustomer = {};
     active.forEach(function (o) {
       if (monthKey(o.created_at) > range.end) return;
-      var key = String(o.email).trim().toLowerCase();
+      var key = customerKey(o);
       byCustomer[key] = (byCustomer[key] || 0) + 1;
     });
     var customers = {};
-    inPeriod.forEach(function (o) { customers[String(o.email).trim().toLowerCase()] = true; });
+    inPeriod.forEach(function (o) { customers[customerKey(o)] = true; });
     var customerKeys = Object.keys(customers);
     var returning = customerKeys.filter(function (k) { return byCustomer[k] > 1; }).length;
     var pct = customerKeys.length ? Math.round(returning / customerKeys.length * 100) : 0;
@@ -1217,13 +1373,13 @@
     var rows = visibleOrders();
     if (!rows.length) { toast("Er zijn geen bestellingen om te exporteren.", true); return; }
     var products = state.products.slice();
-    var head = ["Bestelnummer", "Datum", "Status", "Aangepast", "Naam", "E-mail", "Telefoon", "Straat", "Huisnummer", "Toevoeging", "Postcode", "Plaats", "Flessen"]
+    var head = ["Bestelnummer", "Datum", "Herkomst", "Status", "Aangepast", "Naam", "E-mail", "Telefoon", "Straat", "Huisnummer", "Toevoeging", "Postcode", "Plaats", "Flessen"]
       .concat(products.map(function (p) { return p.name; }))
       .concat(["Totaal incl. btw", "Factuurnummer", "Retour flessen", "Terugbetaald"]);
     var data = rows.slice().sort(function (a, b) { return a.order_number - b.order_number; }).map(function (o) {
       var inv = invoiceFor(o.id);
       var rets = state.returns.filter(function (r) { return r.order_id === o.id; });
-      return [o.order_number, dateTime(o.created_at), STATUS_LABEL[o.status] || o.status, o.edited_at ? "Ja" : "Nee",
+      return [o.order_number, dateTime(o.created_at), o.source === "handmatig" ? "Handmatig" : "Website", STATUS_LABEL[o.status] || o.status, o.edited_at ? "Ja" : "Nee",
         o.name, o.email, o.phone, o.street, o.house_number, o.addition, o.postcode, o.city, bottlesOf(o)]
         .concat(products.map(function (p) {
           return (o.order_items || []).filter(function (it) { return it.product_slug === p.slug; }).reduce(function (t, it) { return t + it.quantity; }, 0);
