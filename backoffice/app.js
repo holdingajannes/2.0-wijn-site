@@ -42,8 +42,8 @@
     });
   }
 
-  var STATUSES = ["nieuw", "bevestigd", "geleverd", "betaald", "geannuleerd"];
-  var STATUS_LABEL = { nieuw: "Nieuw", bevestigd: "Bevestigd", geleverd: "Geleverd", betaald: "Betaald", geannuleerd: "Geannuleerd" };
+  var STATUSES = ["nieuw", "bevestigd", "geleverd", "geannuleerd"];
+  var STATUS_LABEL = { nieuw: "Nieuw", bevestigd: "Bevestigd", geleverd: "Geleverd", geannuleerd: "Geannuleerd" };
   function badge(status) {
     var known = STATUSES.indexOf(status) !== -1;
     return h("span", { class: "badge" + (known ? " badge-" + status : ""), text: known ? STATUS_LABEL[status] : String(status) });
@@ -96,6 +96,7 @@
     priceChanges: [],
     stock: [],
     stockMovements: [],
+    stockAll: false,       // false: laatste mutaties tonen; true: de hele lijst
     settings: null,
     products: []
   };
@@ -210,7 +211,9 @@
       fetchAll("order_changes", "*", "changed_at", false),
       fetchAll("price_changes", "*", "changed_at", false),
       sb.from("stock_levels").select("*"),
-      sb.from("stock_movements").select("*").order("id", { ascending: false }).limit(300)
+      state.stockAll
+        ? fetchAll("stock_movements", "*", "id", false)
+        : sb.from("stock_movements").select("*").order("id", { ascending: false }).limit(STOCK_LOG_RECENT + 1)
     ]).then(function (results) {
       var failed = results.filter(function (r) { return r.error; })[0];
       if (failed) {
@@ -267,7 +270,10 @@
   function matchesFilter(order) {
     var f = $("#order-filter").value;
     if (f === "all") return true;
-    if (f === "open") return ["nieuw", "bevestigd", "geleverd"].indexOf(order.status) !== -1;
+    // Openstaand: nog iets te doen, dus niet geannuleerd en niet (geleverd én betaald).
+    if (f === "open") return order.status !== "geannuleerd" && !(order.status === "geleverd" && order.paid_at);
+    if (f === "unpaid") return order.status !== "geannuleerd" && !order.paid_at;
+    if (f === "paid") return !!order.paid_at;
     return order.status === f;
   }
 
@@ -301,6 +307,7 @@
         h("td", { class: "num", text: money(o.total_incl) }),
         h("td", {}, [
           badge(o.status),
+          o.paid_at ? h("span", { class: "badge badge-betaald", text: "Betaald" }) : null,
           o.source === "handmatig" ? h("span", { class: "badge badge-manual", text: "Handmatig" }) : null,
           o.edited_at ? h("span", { class: "badge badge-edited", text: "Aangepast" }) : null
         ]),
@@ -413,6 +420,19 @@
       order.edited_at ? h("span", { class: "badge badge-edited", text: "Aangepast op " + dateTime(order.edited_at) }) : null
     ]));
 
+    if (order.status !== "geannuleerd") {
+      var paidBtn = h("button", {
+        type: "button", class: order.paid_at ? "btn btn-small" : "btn btn-primary btn-small", id: "dlg-paid",
+        text: order.paid_at ? "Betaling ongedaan maken" : "Markeer als betaald"
+      });
+      paidBtn.addEventListener("click", function () { setPaid(order, !order.paid_at, paidBtn); });
+      dialog.appendChild(h("div", { class: "dialog-section row" }, [
+        h("strong", { text: "Betaling" }),
+        order.paid_at ? h("span", { class: "badge badge-betaald", text: "Betaald op " + dateTime(order.paid_at) }) : h("span", { class: "meta-inline", text: "Nog niet betaald" }),
+        paidBtn
+      ]));
+    }
+
     dialog.appendChild(h("div", { class: "detail-grid" }, [
       h("div", {}, [
         h("h3", { text: "Klant" }),
@@ -453,6 +473,28 @@
     dialog.appendChild(historySection(order));
   }
 
+  var PAID_ERRORS = {
+    order_cancelled: "Voor een geannuleerde bestelling kun je geen betaling registreren.",
+    already_paid: "Deze bestelling is al als betaald gemarkeerd.",
+    not_paid: "Deze bestelling staat niet als betaald."
+  };
+
+  function setPaid(order, paid, button) {
+    if (!paid && !window.confirm("De betaling van bestelling #" + order.order_number + " ongedaan maken?")) return;
+    button.disabled = true;
+    sb.rpc("set_order_paid", { p_order_id: order.id, p_paid: paid }).then(function (res) {
+      if (res.error) {
+        button.disabled = false;
+        toast(PAID_ERRORS[res.error.message] || "Opslaan is niet gelukt. Probeer het opnieuw.", true);
+        return;
+      }
+      loadAll().then(function () {
+        if (openOrderId === order.id) renderDialog();
+        toast(paid ? "Betaling vastgelegd" : "Betaling ongedaan gemaakt");
+      });
+    });
+  }
+
   /* ============================================================
      Bestelling handmatig toevoegen
      ============================================================ */
@@ -470,7 +512,7 @@
     duplicate_product: "Een wijn staat dubbel in de bestelling.",
     not_allowed: "Je hebt geen toegang om bestellingen toe te voegen."
   };
-  var NEW_ORDER_STATUSES = ["nieuw", "bevestigd", "geleverd", "betaald"];
+  var NEW_ORDER_STATUSES = ["nieuw", "bevestigd", "geleverd"];
 
   function openNewOrder() {
     openOrderId = null;
@@ -502,6 +544,7 @@
     var status = h("select", { id: "new-status" }, NEW_ORDER_STATUSES.map(function (s) {
       return h("option", { value: s, text: STATUS_LABEL[s] });
     }));
+    var paid = h("input", { type: "checkbox", id: "new-paid" });
     var note = h("textarea", { id: "new-note", rows: "2", maxlength: "1000", placeholder: "bijv. telefonisch besteld, betaalt contant bij levering" });
 
     var rows = state.products.filter(function (p) { return p.active; }).map(function (p) {
@@ -542,6 +585,7 @@
       f.city.label,
       f.date.label,
       h("label", {}, ["Status", status]),
+      h("label", { class: "span-2 check-row" }, [paid, "Al betaald (bijvoorbeeld contant bij een verkoop)"]),
       h("div", { class: "span-2" }, [h("h3", { text: "Wijnen" }), itemsBox]),
       h("label", { class: "span-2" }, ["Interne notitie (optioneel, de klant ziet dit niet)", note]),
       h("div", { class: "span-2 row" }, [
@@ -572,7 +616,7 @@
       save.disabled = true;
       sb.rpc("create_manual_order", { p_order: {
         name: v(f.name), email: v(f.email), phone: v(f.phone), street: v(f.street), house_number: v(f.number),
-        addition: v(f.addition), postcode: v(f.postcode), city: v(f.city), status: status.value,
+        addition: v(f.addition), postcode: v(f.postcode), city: v(f.city), status: status.value, paid: paid.checked,
         order_date: v(f.date), internal_note: note.value.trim(), items: items
       } }).then(function (res) {
         if (res.error || !res.data) {
@@ -958,7 +1002,7 @@
     var openAmount = 0, openCount = 0;
     state.invoices.forEach(function (inv) {
       var order = state.orders.filter(function (o) { return o.id === inv.order_id; })[0];
-      if (order && order.status !== "betaald" && order.status !== "geannuleerd") {
+      if (order && !order.paid_at && order.status !== "geannuleerd") {
         openAmount += Number(inv.total_incl);
         openCount += 1;
       }
@@ -1382,13 +1426,13 @@
     var rows = visibleOrders();
     if (!rows.length) { toast("Er zijn geen bestellingen om te exporteren.", true); return; }
     var products = state.products.slice();
-    var head = ["Bestelnummer", "Datum", "Herkomst", "Status", "Aangepast", "Naam", "E-mail", "Telefoon", "Straat", "Huisnummer", "Toevoeging", "Postcode", "Plaats", "Flessen"]
+    var head = ["Bestelnummer", "Datum", "Herkomst", "Status", "Betaald", "Aangepast", "Naam", "E-mail", "Telefoon", "Straat", "Huisnummer", "Toevoeging", "Postcode", "Plaats", "Flessen"]
       .concat(products.map(function (p) { return p.name; }))
       .concat(["Totaal incl. btw", "Factuurnummer", "Retour flessen", "Terugbetaald"]);
     var data = rows.slice().sort(function (a, b) { return a.order_number - b.order_number; }).map(function (o) {
       var inv = invoiceFor(o.id);
       var rets = state.returns.filter(function (r) { return r.order_id === o.id; });
-      return [o.order_number, dateTime(o.created_at), o.source === "handmatig" ? "Handmatig" : "Website", STATUS_LABEL[o.status] || o.status, o.edited_at ? "Ja" : "Nee",
+      return [o.order_number, dateTime(o.created_at), o.source === "handmatig" ? "Handmatig" : "Website", STATUS_LABEL[o.status] || o.status, o.paid_at ? "Ja" : "Nee", o.edited_at ? "Ja" : "Nee",
         o.name, o.email, o.phone, o.street, o.house_number, o.addition, o.postcode, o.city, bottlesOf(o)]
         .concat(products.map(function (p) {
           return (o.order_items || []).filter(function (it) { return it.product_slug === p.slug; }).reduce(function (t, it) { return t + it.quantity; }, 0);
@@ -1406,7 +1450,7 @@
       var snap = inv.snapshot || {};
       var order = state.orders.filter(function (o) { return o.id === inv.order_id; })[0];
       data.push({ date: inv.issued_on, nr: inv.invoice_number, row: ["Factuur", inv.invoice_number, dateOnly(inv.issued_on), (snap.customer || {}).name,
-        snap.order_number, num(inv.total_excl), num(inv.vat_amount), num(inv.total_incl), num(inv.vat_rate), "", order && order.status === "betaald" ? "Ja" : "Nee"] });
+        snap.order_number, num(inv.total_excl), num(inv.vat_amount), num(inv.total_incl), num(inv.vat_rate), "", order && order.paid_at ? "Ja" : "Nee"] });
     });
     state.creditNotes.forEach(function (cn) {
       var snap = cn.snapshot || {};
@@ -1511,6 +1555,7 @@
     aanpassing: "Bestelling aangepast",
     annulering: "Bestelling teruggeboekt"
   };
+  var STOCK_LOG_RECENT = 10;
   var STOCK_FORM_KINDS = ["losse_flessen", "sample", "breuk", "retour", "telling"];
   var STOCK_ERRORS = {
     invalid_quantity: "Vul een heel aantal flessen in.",
@@ -1547,7 +1592,8 @@
 
     var log = $("#stock-log-table tbody");
     log.textContent = "";
-    state.stockMovements.forEach(function (m) {
+    var shown = state.stockAll ? state.stockMovements : state.stockMovements.slice(0, STOCK_LOG_RECENT);
+    shown.forEach(function (m) {
       log.appendChild(h("tr", {}, [
         h("td", { text: dateTime(m.created_at) }),
         h("td", { text: productName(m.product_slug) }),
@@ -1559,6 +1605,9 @@
     });
     $("#stock-log-empty").hidden = state.stockMovements.length > 0;
     $("#stock-log-table").hidden = state.stockMovements.length === 0;
+    var more = $("#stock-log-more");
+    more.hidden = state.stockMovements.length <= STOCK_LOG_RECENT && !state.stockAll;
+    more.textContent = state.stockAll ? "Toon alleen de laatste " + STOCK_LOG_RECENT : "Toon alle mutaties";
   }
 
   function openStock(kind) {
@@ -1654,6 +1703,10 @@
     dialog.appendChild(form);
   }
 
+  $("#stock-log-more").addEventListener("click", function () {
+    state.stockAll = !state.stockAll;
+    loadAll();
+  });
   $("#stock-add").addEventListener("click", function () { openStock("losse_flessen"); });
   $("#stock-sample").addEventListener("click", function () { openStock("sample"); });
   $("#stock-count").addEventListener("click", function () { openStock("telling"); });

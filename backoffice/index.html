@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self'; img-src 'self' data:; connect-src https://*.supabase.co; base-uri 'none'; form-action 'none'">
   <title>Back office — Druif &amp; Draad</title>
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
-  <link rel="stylesheet" href="style.css?v=20261110b">
+  <link rel="stylesheet" href="style.css?v=20261111">
 </head>
 <body>
 
@@ -99,12 +99,13 @@
         <div class="toolbar">
           <label class="visually-hidden" for="order-filter">Filter op status</label>
           <select id="order-filter">
-            <option value="open">Openstaand (nieuw, bevestigd, geleverd)</option>
+            <option value="open">Openstaand (nog niet afgerond)</option>
             <option value="all">Alle bestellingen</option>
+            <option value="unpaid">Nog niet betaald</option>
+            <option value="paid">Betaald</option>
             <option value="nieuw">Nieuw</option>
             <option value="bevestigd">Bevestigd</option>
             <option value="geleverd">Geleverd</option>
-            <option value="betaald">Betaald</option>
             <option value="geannuleerd">Geannuleerd</option>
           </select>
           <label class="visually-hidden" for="order-search">Zoeken</label>
@@ -137,7 +138,7 @@
             <tbody></tbody>
           </table>
         </div>
-        <p class="hint footnote">De flessen van een bestelling gaan automatisch van de voorraad af zodra de bestelling op Bevestigd (of Geleverd of Betaald) staat. Bij Nieuw gebeurt er nog niets; bij annuleren komen de flessen terug. Staat de voorraad onder nul, dan is er meer besteld dan er is; de bestelling wordt dan niet geweigerd.</p>
+        <p class="hint footnote">De flessen van een bestelling gaan automatisch van de voorraad af zodra de bestelling op Bevestigd (of Geleverd) staat. Bij Nieuw gebeurt er nog niets; bij annuleren komen de flessen terug. Staat de voorraad onder nul, dan is er meer besteld dan er is; de bestelling wordt dan niet geweigerd.</p>
         <h2>Voorraadmutaties</h2>
         <div class="table-wrap">
           <table class="data" id="stock-log-table">
@@ -145,6 +146,7 @@
             <tbody></tbody>
           </table>
         </div>
+        <p><button type="button" class="btn btn-small" id="stock-log-more" hidden>Toon alle mutaties</button></p>
         <p class="empty" id="stock-log-empty" hidden>Er zijn nog geen voorraadmutaties. Begin met <strong>Voorraad tellen</strong> om de huidige voorraad in te vullen.</p>
       </section>
 
@@ -219,6 +221,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
   <script src="../js/config.js"></script>
-  <script src="app.js?v=20261110b"></script>
+  <script src="app.js?v=20261111"></script>
 </body>
 </html>

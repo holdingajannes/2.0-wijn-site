@@ -294,3 +294,8 @@ dialog::backdrop { background: rgba(20, 16, 10, 0.45); }
 .stock-row.head span:not(:first-child) { text-align: right; }
 .stock-form label.stock-kind { display: block; margin-bottom: 0.9rem; }
 .data input.pallet-input { width: 6rem; text-align: right; min-height: 36px; padding: 0.3em 0.6em; }
+
+/* ---------- Betaling los van de status ---------- */
+.meta-inline { color: var(--muted); }
+.check-row { display: flex; align-items: center; gap: 0.5rem; }
+.check-row input { width: auto; min-height: 0; }
