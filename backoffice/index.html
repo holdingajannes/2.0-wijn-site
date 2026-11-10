@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self'; img-src 'self' data:; connect-src https://*.supabase.co; base-uri 'none'; form-action 'none'">
   <title>Back office — Druif &amp; Draad</title>
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261110b">
 </head>
 <body>
 
@@ -133,11 +133,11 @@
         </div>
         <div class="table-wrap">
           <table class="data" id="stock-table">
-            <thead><tr><th>Wijn</th><th class="num">Op voorraad (flessen)</th><th class="num">Flessen per pallet</th><th></th></tr></thead>
+            <thead><tr><th>Wijn</th><th class="num">Op voorraad (flessen)</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
-        <p class="hint footnote">Een bestelling (website of handmatig) gaat automatisch van de voorraad af, een annulering komt er weer bij. Staat de voorraad onder nul, dan is er meer besteld dan er is; de bestelling wordt dan niet geweigerd.</p>
+        <p class="hint footnote">De flessen van een bestelling gaan automatisch van de voorraad af zodra de bestelling op Bevestigd (of Geleverd of Betaald) staat. Bij Nieuw gebeurt er nog niets; bij annuleren komen de flessen terug. Staat de voorraad onder nul, dan is er meer besteld dan er is; de bestelling wordt dan niet geweigerd.</p>
         <h2>Voorraadmutaties</h2>
         <div class="table-wrap">
           <table class="data" id="stock-log-table">
@@ -219,6 +219,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
   <script src="../js/config.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=20261110b"></script>
 </body>
 </html>

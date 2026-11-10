@@ -1502,18 +1502,17 @@
 
   var STOCK_KIND_LABEL = {
     pallet: "Binnenkomst in pallets",
-    losse_flessen: "Binnenkomst losse flessen",
+    losse_flessen: "Binnenkomst flessen",
     sample: "Sample weggegeven",
     breuk: "Breuk of verlies",
     retour: "Retour terug op voorraad",
     telling: "Telling (stelt de voorraad in)",
     bestelling: "Bestelling",
     aanpassing: "Bestelling aangepast",
-    annulering: "Bestelling geannuleerd"
+    annulering: "Bestelling teruggeboekt"
   };
-  var STOCK_FORM_KINDS = ["pallet", "losse_flessen", "sample", "breuk", "retour", "telling"];
+  var STOCK_FORM_KINDS = ["losse_flessen", "sample", "breuk", "retour", "telling"];
   var STOCK_ERRORS = {
-    invalid_pallets: "Vul het aantal pallets en het aantal flessen per pallet in (hele getallen).",
     invalid_quantity: "Vul een heel aantal flessen in.",
     unknown_product: "Deze wijn is niet bekend.",
     duplicate_product: "Een wijn staat dubbel in de lijst.",
@@ -1540,18 +1539,9 @@
     tbody.textContent = "";
     state.products.forEach(function (p) {
       var qty = stockOf(p.slug);
-      var rec = stockRecord(p.slug);
-      var per = h("input", {
-        type: "text", inputmode: "numeric", autocomplete: "off", class: "pallet-input", placeholder: "–",
-        value: rec && rec.bottles_per_pallet ? String(rec.bottles_per_pallet) : "", "aria-label": "Flessen per pallet " + p.name
-      });
-      var save = h("button", { type: "button", class: "btn btn-small", text: "Opslaan" });
-      save.addEventListener("click", function () { savePerPallet(p, per, save); });
       tbody.appendChild(h("tr", {}, [
         h("td", { text: "Druif & Draad " + p.name }),
-        h("td", { class: "num" + (qty < 0 ? " stock-negative" : ""), text: String(qty) }),
-        h("td", { class: "num" }, [per]),
-        h("td", {}, [save])
+        h("td", { class: "num" + (qty < 0 ? " stock-negative" : ""), text: String(qty) })
       ]));
     });
 
@@ -1564,28 +1554,11 @@
         h("td", { class: "num " + (m.delta > 0 ? "stock-in" : "stock-out"), text: (m.delta > 0 ? "+" : "−") + Math.abs(m.delta) }),
         h("td", { text: (STOCK_KIND_LABEL[m.kind] || m.kind) + (m.kind === "pallet" && m.pallets ? " (" + m.pallets + " × " + m.per_pallet + ")" : "") }),
         h("td", { text: m.note || "" }),
-        h("td", { text: m.created_by_email || "website" })
+        h("td", { text: m.created_by_email || "systeem" })
       ]));
     });
     $("#stock-log-empty").hidden = state.stockMovements.length > 0;
     $("#stock-log-table").hidden = state.stockMovements.length === 0;
-  }
-
-  function savePerPallet(product, input, button) {
-    var raw = String(input.value).trim();
-    var value = raw === "" ? null : Number(raw);
-    if (value !== null && !(Number.isInteger(value) && value >= 1 && value <= 5000)) {
-      toast("Vul een heel aantal flessen per pallet in (1 tot 5000).", true);
-      return;
-    }
-    button.disabled = true;
-    sb.from("stock_levels").update({ bottles_per_pallet: value }).eq("product_slug", product.slug).select().then(function (res) {
-      button.disabled = false;
-      if (res.error || !res.data || !res.data.length) { toast("Opslaan is niet gelukt.", true); return; }
-      var rec = stockRecord(product.slug);
-      if (rec) rec.bottles_per_pallet = value;
-      toast("Opgeslagen");
-    });
   }
 
   function openStock(kind) {
@@ -1604,46 +1577,26 @@
     }));
     kindSelect.addEventListener("change", function () { renderStockForm(kindSelect.value); });
 
-    var isPallet = kind === "pallet";
     var isCount = kind === "telling";
     var rows = state.products.filter(function (p) { return p.active; }).map(function (p) {
-      var rec = stockRecord(p.slug);
       return {
         slug: p.slug, name: p.name,
-        pallets: isPallet ? h("input", { type: "number", min: "0", max: "999", step: "1", "aria-label": "Aantal pallets " + p.name }) : null,
-        perPallet: isPallet ? h("input", { type: "number", min: "1", max: "5000", step: "1", value: rec && rec.bottles_per_pallet ? String(rec.bottles_per_pallet) : "", "aria-label": "Flessen per pallet " + p.name }) : null,
-        qty: isPallet ? null : h("input", { type: "number", min: "0", max: "1000000", step: "1", "aria-label": (isCount ? "Getelde voorraad " : "Aantal flessen ") + p.name })
+        qty: h("input", { type: "number", min: "0", max: "1000000", step: "1", "aria-label": (isCount ? "Getelde voorraad " : "Aantal flessen ") + p.name })
       };
     });
 
     var box = h("div", { class: "edit-box" });
-    if (isPallet) {
-      box.appendChild(h("div", { class: "stock-row head" }, [h("span", { text: "Wijn" }), h("span", { text: "Pallets" }), h("span", { text: "Flessen per pallet" }), h("span", { text: "Totaal" })]));
-    } else {
-      box.appendChild(h("div", { class: "stock-row simple head" }, [h("span", { text: "Wijn" }), h("span", { text: "Nu op voorraad" }), h("span", { text: isCount ? "Geteld" : "Aantal flessen" })]));
-    }
+    box.appendChild(h("div", { class: "stock-row simple head" }, [h("span", { text: "Wijn" }), h("span", { text: "Nu op voorraad" }), h("span", { text: isCount ? "Geteld" : "Aantal flessen" })]));
     rows.forEach(function (r) {
-      if (isPallet) {
-        var totalEl = h("span", { class: "num", text: "0" });
-        function recompute() {
-          var a = parseInt(r.pallets.value, 10), b = parseInt(r.perPallet.value, 10);
-          totalEl.textContent = String(a > 0 && b > 0 ? a * b : 0);
-        }
-        r.pallets.addEventListener("input", recompute);
-        r.perPallet.addEventListener("input", recompute);
-        box.appendChild(h("div", { class: "stock-row" }, [h("span", { text: "Druif & Draad " + r.name }), r.pallets, r.perPallet, totalEl]));
-      } else {
-        box.appendChild(h("div", { class: "stock-row simple" }, [
-          h("span", { text: "Druif & Draad " + r.name }),
-          h("span", { class: "num" + (stockOf(r.slug) < 0 ? " stock-negative" : ""), text: String(stockOf(r.slug)) }),
-          r.qty
-        ]));
-      }
+      box.appendChild(h("div", { class: "stock-row simple" }, [
+        h("span", { text: "Druif & Draad " + r.name }),
+        h("span", { class: "num" + (stockOf(r.slug) < 0 ? " stock-negative" : ""), text: String(stockOf(r.slug)) }),
+        r.qty
+      ]));
     });
 
     var hints = {
-      pallet: "Vul alleen de wijnen in die zijn binnengekomen. Het aantal flessen per pallet wordt onthouden voor de volgende keer.",
-      losse_flessen: "Vul alleen de wijnen in die zijn binnengekomen.",
+      losse_flessen: "Aantal flessen dat is binnengekomen. Vul alleen de wijnen in waar iets van is binnengekomen.",
       sample: "Flessen die je weggeeft als proefmonster. Vul alleen de wijnen in die je hebt weggegeven.",
       breuk: "Kapotte of verloren flessen. Vul alleen de wijnen in waar dit voor geldt.",
       retour: "Alleen voor geretourneerde flessen die je nog kunt verkopen. Een retour boekt de voorraad niet vanzelf terug.",
@@ -1666,24 +1619,15 @@
       var overdraw = [];
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i];
-        if (isPallet) {
-          if (r.pallets.value.trim() === "" && r.perPallet.value.trim() === "") continue;
-          var a = Number(r.pallets.value), b = Number(r.perPallet.value);
-          if (a === 0 && r.pallets.value.trim() !== "") continue;
-          if (!(Number.isInteger(a) && a >= 1 && a <= 999 && Number.isInteger(b) && b >= 1 && b <= 5000)) { toast(STOCK_ERRORS.invalid_pallets, true); return; }
-          lines.push({ slug: r.slug, pallets: a, per_pallet: b });
-          summary.push("+" + a * b + " " + r.name + " (" + a + " × " + b + ")");
-        } else {
-          if (r.qty.value.trim() === "") continue;
-          var q = Number(r.qty.value);
-          if (!(Number.isInteger(q) && q >= 0 && q <= 1000000)) { toast(STOCK_ERRORS.invalid_quantity, true); return; }
-          if (!isCount && q === 0) continue;
-          lines.push({ slug: r.slug, quantity: q });
-          if (isCount) summary.push(r.name + ": " + stockOf(r.slug) + " → " + q);
-          else {
-            summary.push((kind === "sample" || kind === "breuk" ? "−" : "+") + q + " " + r.name);
-            if ((kind === "sample" || kind === "breuk") && q > stockOf(r.slug)) overdraw.push(r.name);
-          }
+        if (r.qty.value.trim() === "") continue;
+        var q = Number(r.qty.value);
+        if (!(Number.isInteger(q) && q >= 0 && q <= 1000000)) { toast(STOCK_ERRORS.invalid_quantity, true); return; }
+        if (!isCount && q === 0) continue;
+        lines.push({ slug: r.slug, quantity: q });
+        if (isCount) summary.push(r.name + ": " + stockOf(r.slug) + " → " + q);
+        else {
+          summary.push((kind === "sample" || kind === "breuk" ? "−" : "+") + q + " " + r.name);
+          if ((kind === "sample" || kind === "breuk") && q > stockOf(r.slug)) overdraw.push(r.name);
         }
       }
       if (!lines.length) { toast(STOCK_ERRORS.no_items, true); return; }
@@ -1710,7 +1654,7 @@
     dialog.appendChild(form);
   }
 
-  $("#stock-add").addEventListener("click", function () { openStock("pallet"); });
+  $("#stock-add").addEventListener("click", function () { openStock("losse_flessen"); });
   $("#stock-sample").addEventListener("click", function () { openStock("sample"); });
   $("#stock-count").addEventListener("click", function () { openStock("telling"); });
 
