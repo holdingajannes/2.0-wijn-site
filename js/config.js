@@ -1,11 +1,7 @@
-/* Verbinding met de database voor de back office (Supabase).
-   Beide waarden vind je in Supabase onder Project Settings -> API:
-   - supabaseUrl: de "Project URL", bijvoorbeeld https://abcdefgh.supabase.co
-   - supabaseKey: de "anon" / "publishable" key. Deze sleutel is bedoeld om openbaar te zijn;
-     de beveiliging zit in de database (zie backoffice/schema.sql).
-   Gebruik hier NOOIT de "service_role" of "secret" key.
-   Zolang dit leeg is, werkt het bestelformulier zoals voorheen alleen via Formspree. */
+/* TEST: de testsite (jannesholdinga.nl) met een EIGEN testdatabase en het testformulier.
+   Vul hieronder de gegevens van het tweede Supabase-project in (Project Settings -> API). */
 window.DD_CONFIG = {
-  supabaseUrl: "https://fhuvtutxzxxtiyejuyin.supabase.co",
-  supabaseKey: "sb_publishable_waNpkIvthAwRL0ZueNhgWA_ufVxpREh"
+  supabaseUrl: "https://yilmzeavimbcwlrgaloi.supabase.co",
+  supabaseKey: "sb_publishable_9AqAV3vngz_bc5n_ivugAg_SpNn1F2c",
+  formEndpoint: "https://formspree.io/f/mqpprzde"
 };

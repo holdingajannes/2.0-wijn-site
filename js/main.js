@@ -551,11 +551,12 @@
     var form = document.getElementById("order-form");
     if (!form) return;
 
-    // Formulier-adres van Formspree (https://formspree.io). Bevat dit nog "YOUR_FORM_ID",
-    // dan opent het formulier in plaats daarvan het e-mailprogramma van de klant met de bestelling.
-    // TESTFORMULIER (mail naar Jannes). Voor de echte start terugzetten naar de info@druifendraad.nl-versie:
-    // "https://formspree.io/f/mbggvgbg"
-    var FORM_ENDPOINT = "https://formspree.io/f/mqpprzde";
+    // Formulier-adres van Formspree (https://formspree.io). Standaard het echte formulier
+    // (mail naar info@druifendraad.nl). De testsite zet in js/config.js een eigen
+    // "formEndpoint", zodat testbestellingen niet bij de eigenaren aankomen.
+    // Bevat het adres "YOUR_FORM_ID", dan opent het formulier in plaats daarvan het
+    // e-mailprogramma van de klant met de bestelling.
+    var FORM_ENDPOINT = (window.DD_CONFIG && window.DD_CONFIG.formEndpoint) || "https://formspree.io/f/mbggvgbg";
     var ORDER_EMAIL = "info@druifendraad.nl";
 
     var lines = Array.prototype.slice.call(form.querySelectorAll(".order-line"));
